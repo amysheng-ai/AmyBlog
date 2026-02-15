@@ -48,9 +48,9 @@ const jsonLd = {
 ---
 <MainGridLayout banner={entry.data.image} title={entry.data.title} description={entry.data.description} lang={entry.data.lang} setOGTypeArticle={true} headings={headings} hideSidebar={true}>
     <script is:inline slot="head" type="application/ld+json" set:html={JSON.stringify(jsonLd)}></script>
-    <div class="flex flex-col xl:flex-row gap-4 w-full mb-4">
+    <div class="flex flex-col xl:flex-row gap-4 w-full mb-4 xl:items-start">
         <!-- Main Content -->
-        <div class="flex-1 rounded-[var(--radius-large)] relative">
+        <div class="flex-1 rounded-[var(--radius-large)] relative min-w-0">
             <div id="post-container" class:list={["card-base z-10 px-6 md:px-9 pt-6 pb-4 relative w-full overflow-hidden",
                 {}
             ]}>
@@ -136,8 +136,8 @@ const jsonLd = {
 
         <!-- Desktop TOC Sidebar -->
         {siteConfig.toc.enable && headings.length > 0 && (
-        <aside class="hidden xl:block w-64 shrink-0 self-start">
-            <div class="sticky top-24">
+        <aside class="hidden xl:block w-64 shrink-0">
+            <div class="sticky top-24" style="position: sticky; top: 6rem;">
                 <details class="card-base overflow-hidden open" open>
                     <summary class="p-4 cursor-pointer flex items-center justify-between hover:bg-[var(--toc-btn-hover)] transition select-none list-none">
                         <span class="text-sm font-bold text-black/60 dark:text-white/60 flex items-center gap-2">
