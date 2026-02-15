@@ -63,9 +63,10 @@ const mainPanelTop = siteConfig.banner.enable
 <div class="absolute w-full z-30 pointer-events-none" style={`top: ${mainPanelTop}`}>
     <!-- The pointer-events-none here prevent blocking the click event of the TOC -->
     <div class="relative max-w-[var(--page-width)] mx-auto pointer-events-auto">
-        <div id="main-grid" class="transition duration-700 w-full left-0 right-0 grid grid-cols-[17.5rem_auto] grid-rows-[auto_1fr_auto] lg:grid-rows-[auto]
-    mx-auto gap-4 px-0 md:px-4"
-        >
+        <div id="main-grid" class:list={["transition duration-700 w-full left-0 right-0 mx-auto gap-4 px-0 md:px-4 grid",
+            "grid-cols-[17.5rem_auto] grid-rows-[auto_1fr_auto] lg:grid-rows-[auto]",
+            "xl:grid-cols-[17.5rem_auto_16rem]"
+        ]}>
             <!-- Banner image credit -->
             {hasBannerCredit && <a href={siteConfig.banner.credit.url} id="banner-credit" target="_blank" rel="noopener" aria-label="Visit image source"
                                    class:list={["group onload-animation transition-all absolute flex justify-center items-center rounded-full " +
@@ -82,18 +83,41 @@ const mainPanelTop = siteConfig.banner.enable
 
             <SideBar class="mb-4 row-start-2 row-end-3 col-span-2 lg:row-start-1 lg:row-end-2 lg:col-span-1 lg:max-w-[17.5rem] onload-animation" headings={headings}></SideBar>
 
-            <main id="swup-container" class="transition-swup-fade col-span-2 lg:col-span-1 overflow-hidden">
+            <main id="swup-container" class="transition-swup-fade col-span-2 lg:col-span-1 overflow-hidden xl:col-span-1">
                 <div id="content-wrapper" class="onload-animation">
                     <!-- the overflow-hidden here prevent long text break the layout-->
                     <!-- make id different from windows.swup global property -->
                     <slot></slot>
-                    <div class="footer col-span-2 onload-animation hidden lg:block">
-                        <Footer></Footer>
-                    </div>
                 </div>
             </main>
 
-            <div class="footer col-span-2 onload-animation block lg:hidden">
+            <!-- Desktop TOC Sidebar -->
+            {siteConfig.toc.enable && headings.length > 0 && (
+            <aside class="hidden xl:block xl:col-span-1 xl:row-start-1 xl:row-end-2 onload-animation">
+                <div class="sticky top-20 max-h-[calc(100vh-8rem)] overflow-y-auto hide-scrollbar">
+                    <div class="card-base p-4">
+                        <div class="text-sm font-bold text-black/60 dark:text-white/60 mb-3 flex items-center gap-2">
+                            <Icon name="material-symbols:format-list-bulleted-rounded" class="w-4 h-4" />
+                            Contents
+                        </div>
+                        <TOC headings={headings} />
+                    </div>
+                </div>
+            </aside>
+            )}
+
+            <!-- Mobile Footer -->
+            <div class="col-span-2 onload-animation block lg:hidden">
+                <Footer></Footer>
+            </div>
+
+            <!-- Desktop Footer (lg only, no TOC) -->
+            <div class="hidden lg:block xl:hidden col-span-2 onload-animation">
+                <Footer></Footer>
+            </div>
+
+            <!-- Desktop Footer with TOC (xl) -->
+            <div class="hidden xl:block col-span-3 onload-animation">
                 <Footer></Footer>
             </div>
         </div>
@@ -102,30 +126,4 @@ const mainPanelTop = siteConfig.banner.enable
     </div>
 </div>
 
-<!-- TOC Widget - Desktop: Right Sidebar -->
-<div class="absolute w-full z-0 hidden xl:block">
-    <div class="relative max-w-[var(--page-width)] mx-auto">
-        <!-- TOC component -->
-        {siteConfig.toc.enable && headings.length > 0 && <div id="toc-wrapper" class:list={["transition absolute top-0 -right-[var(--toc-width)] w-[var(--toc-width)] items-center",
-            {"toc-hide": siteConfig.banner.enable}]}
-        >
-            <div id="toc-inner-wrapper" class="fixed top-14 w-[var(--toc-width)] h-[calc(100vh_-_8rem)] overflow-y-scroll overflow-x-hidden hide-scrollbar">
-                <div class="card-base p-4 mb-4">
-                    <div class="text-sm font-bold text-black/60 dark:text-white/60 mb-3 flex items-center gap-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                            <path fill-rule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd" />
-                        </svg>
-                        Table of Contents
-                    </div>
-                    <div id="toc" class="w-full transition-swup-fade">
-                        <TOC headings={headings}></TOC>
-                    </div>
-                </div>
-            </div>
-        </div>}
-
-        <!-- #toc needs to exist for Swup to work normally -->
-        {(!siteConfig.toc.enable || headings.length === 0) && <div id="toc"></div>}
-    </div>
-</div>
 </Layout>
