@@ -136,23 +136,21 @@ const jsonLd = {
 
         <!-- Desktop TOC Sidebar -->
         {siteConfig.toc.enable && headings.length > 0 && (
-        <aside class="hidden xl:block w-64 shrink-0">
-            <div class="sticky top-24" style="position: sticky; top: 6rem;">
-                <details class="card-base overflow-hidden open" open>
-                    <summary class="p-4 cursor-pointer flex items-center justify-between hover:bg-[var(--toc-btn-hover)] transition select-none list-none">
-                        <span class="text-sm font-bold text-black/60 dark:text-white/60 flex items-center gap-2">
-                            <Icon name="material-symbols:format-list-bulleted-rounded" class="w-4 h-4" />
-                            Contents
-                        </span>
-                        <Icon name="material-symbols:expand-less-rounded" class="w-4 h-4 text-black/40 dark:text-white/40 transition-transform" />
-                    </summary>
-                    <div class="px-4 pb-4 border-t border-[var(--line-divider)]">
-                        <div class="pt-3 max-h-[calc(100vh-16rem)] overflow-y-auto hide-scrollbar">
-                            <TOC headings={headings} />
-                        </div>
+        <aside id="desktop-toc" class="hidden xl:block w-64 shrink-0 self-start h-fit sticky top-24 z-10">
+            <details class="card-base overflow-hidden open" open>
+                <summary class="p-4 cursor-pointer flex items-center justify-between hover:bg-[var(--toc-btn-hover)] transition select-none list-none">
+                    <span class="text-sm font-bold text-black/60 dark:text-white/60 flex items-center gap-2">
+                        <Icon name="material-symbols:format-list-bulleted-rounded" class="w-4 h-4" />
+                        Contents
+                    </span>
+                    <Icon name="material-symbols:expand-less-rounded" class="w-4 h-4 text-black/40 dark:text-white/40 transition-transform" />
+                </summary>
+                <div class="px-4 pb-4 border-t border-[var(--line-divider)]">
+                    <div class="pt-3 max-h-[calc(100vh-16rem)] overflow-y-auto hide-scrollbar">
+                        <TOC headings={headings} />
                     </div>
-                </details>
-            </div>
+                </div>
+            </details>
         </aside>
         )}
     </div>
@@ -180,3 +178,67 @@ const jsonLd = {
     </div>
 
 </MainGridLayout>
+
+<script>
+const initTocInertia = () => {
+    if (window.__tocInertiaCleanup) {
+        window.__tocInertiaCleanup();
+    }
+
+    const toc = document.getElementById("desktop-toc");
+    if (!toc) return;
+
+    let rafId = 0;
+    let lastY = window.scrollY;
+    let targetOffset = 0;
+    let currentOffset = 0;
+
+    const MAX_OFFSET = 10;
+    const FOLLOW_RATIO = 0.08;
+    const EASE = 0.16;
+    const DAMPING = 0.88;
+
+    const animate = () => {
+        currentOffset += (targetOffset - currentOffset) * EASE;
+        targetOffset *= DAMPING;
+
+        if (Math.abs(currentOffset) < 0.05 && Math.abs(targetOffset) < 0.05) {
+            currentOffset = 0;
+            targetOffset = 0;
+            toc.style.transform = "";
+            rafId = 0;
+            return;
+        }
+
+        toc.style.transform = `translateY(${currentOffset.toFixed(2)}px)`;
+        rafId = window.requestAnimationFrame(animate);
+    };
+
+    const onScroll = () => {
+        const y = window.scrollY;
+        const delta = y - lastY;
+        lastY = y;
+
+        targetOffset += delta * FOLLOW_RATIO;
+        targetOffset = Math.max(-MAX_OFFSET, Math.min(MAX_OFFSET, targetOffset));
+
+        if (!rafId) rafId = window.requestAnimationFrame(animate);
+    };
+
+    toc.style.willChange = "transform";
+    window.addEventListener("scroll", onScroll, { passive: true });
+
+    window.__tocInertiaCleanup = () => {
+        if (rafId) window.cancelAnimationFrame(rafId);
+        window.removeEventListener("scroll", onScroll);
+        toc.style.transform = "";
+        toc.style.willChange = "";
+    };
+};
+
+if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initTocInertia, { once: true });
+} else {
+    initTocInertia();
+}
+</script>

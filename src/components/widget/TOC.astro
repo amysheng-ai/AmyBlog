@@ -35,6 +35,7 @@ const maxLevel = siteConfig.toc.depth;
 <table-of-contents class:list={[className, "group"]}>
     {headings.filter((heading) => heading.depth < minDepth + maxLevel).map((heading) =>
             <a href={`#${heading.slug}`} class="px-2 flex gap-2 relative transition w-full min-h-9 rounded-xl
+        text-black/60 dark:text-white/65 hover:text-black/80 dark:hover:text-white/85
         hover:bg-[var(--toc-btn-hover)] active:bg-[var(--toc-btn-active)] py-2
     ">
                 <div class:list={["transition w-5 h-5 shrink-0 rounded-lg text-xs flex items-center justify-center font-bold",
@@ -54,8 +55,6 @@ const maxLevel = siteConfig.toc.depth;
                 }]}>{removeTailingHash(heading.text)}</div>
             </a>
     )}
-    <div id="active-indicator" style="opacity: 0" class:list={[{'hidden': headings.length == 0}, "-z-10 absolute bg-[var(--toc-btn-hover)] left-0 right-0 rounded-xl transition-all " +
-        "group-hover:bg-transparent border-2 border-[var(--toc-btn-hover)] group-hover:border-[var(--toc-btn-active)] border-dashed"]}></div>
 </table-of-contents>}
 
 <style>
@@ -78,7 +77,6 @@ class TableOfContents extends HTMLElement {
     sections: HTMLElement[] = [];
     tocEntries: HTMLAnchorElement[] = [];
     active: boolean[] = [];
-    activeIndicator: HTMLElement | null = null;
 
     constructor() {
         super();
@@ -119,15 +117,6 @@ class TableOfContents extends HTMLElement {
         while (i >= 0) {
             this.tocEntries[i].classList.remove(this.visibleClass);
             i--;
-        }
-        if (min > max) {
-            this.activeIndicator?.setAttribute("style", `opacity: 0`);
-        } else {
-            let parentOffset = this.tocEl?.getBoundingClientRect().top || 0;
-            let scrollOffset = this.tocEl?.scrollTop || 0;
-            let top = this.tocEntries[min].getBoundingClientRect().top - parentOffset + scrollOffset;
-            let bottom = this.tocEntries[max].getBoundingClientRect().bottom - parentOffset + scrollOffset;
-            this.activeIndicator?.setAttribute("style", `top: ${top}px; height: ${bottom - top}px`);
         }
     };
 
@@ -227,8 +216,6 @@ class TableOfContents extends HTMLElement {
         this.tocEl.addEventListener("click", this.handleAnchorClick, {
             capture: true,
         });
-
-        this.activeIndicator = this.querySelector("#active-indicator") as HTMLElement;
 
         // Find all anchor links within this TOC component
         this.tocEntries = Array.from(
