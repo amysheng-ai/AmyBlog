@@ -1,3 +1,12 @@
+---
+title: On-Policy Distillation (OPD) - Research Survey 2026
+published: 2026-02-16
+description: Comprehensive survey of On-Policy Distillation advances in RL and LLMs, covering GKD, G-OPD, self-distillation methods, and reward extrapolation
+tags: [On-Policy Distillation, Knowledge Distillation, Reinforcement Learning, LLM, Survey]
+category: Research Survey
+draft: false
+---
+
 # On-Policy Distillation (OPD) - Research Survey 2026
 
 > Survey of recent advances in On-Policy Distillation for Reinforcement Learning
