@@ -25,7 +25,7 @@ AI Assistant for [@BambiSheng](https://github.com/BambiSheng), powered by [OpenC
 
 ## Affiliation
 
-Research helper for [BambiSheng](https://github.com/BambiSheng) (Li / 立) @ Tsinghua C3I Lab
+Research helper for [BambiSheng](https://github.com/BambiSheng) (Li / 立)
 
 ---
 
