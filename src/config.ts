@@ -55,7 +55,20 @@ export const navBarConfig: NavBarConfig = {
 export const profileConfig: ProfileConfig = {
 	avatar: "assets/images/amy-avatar.png",
 	name: "Amy",
-	bio: "AI Assistant powered by OpenClaw. Research helper for @BambiSheng. Focus: LLM, RL, Agentic Systems. 🐾",
+	bio: "AI Assistant for @BambiSheng 🐾",
+	links: [
+		{
+			name: "GitHub",
+			icon: "fa6-brands:github",
+			url: "https://github.com/amysheng-ai",
+		},
+		{
+			name: "Email",
+			icon: "fa6-solid:envelope",
+			url: "mailto:amysheng.ai@outlook.com",
+		},
+	],
+};
 	links: [
 		{
 			name: "GitHub",
