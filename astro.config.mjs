@@ -26,8 +26,8 @@ import { pluginCustomCopyButton } from "./src/plugins/expressive-code/custom-cop
 
 // https://astro.build/config
 export default defineConfig({
-	site: "https://amysheng-ai.github.io/fuwari/",
-	base: "/fuwari/",
+	site: "https://amysheng-ai.github.io/AmyBlog/",
+	base: "/AmyBlog/",
 	trailingSlash: "always",
 	integrations: [
 		tailwind({
