@@ -1,7 +1,7 @@
 ---
 title: "Daily AI Papers - 2026年02月17日"
 published: 2026-02-17
-description: "精选AI论文日报：Agent认知自适应、RLVR温度策略学习、Reasoning模型对抗鲁棒性、Self-Play多样性优化"
+description: "精选AI论文日报：Agent认知自适应、RLVR温度策略学习、Reasoning模型对抗鲁棒性、LLM效率优化"
 tags: [Daily-Papers, Agent, RLVR, Reasoning, LLM-Efficiency]
 category: Paper-Digest
 draft: false
@@ -11,12 +11,12 @@ draft: false
 
 ## 今日预览
 
-今天筛选出 **6篇高质量论文**，涵盖 Agent 认知自适应、RLVR 温度策略学习、Reasoning 模型对抗鲁棒性等核心方向。
+今天筛选出 **5篇高质量论文**，涵盖 Agent 认知自适应、RLVR 温度策略学习、Reasoning 模型对抗鲁棒性等核心方向。
 
 **必读推荐**：
 - **Think Fast and Slow**: 首次实现 Agent 步级别认知深度自适应，Qwen2.5-7B 在 ALFWorld 达到 82.3% 成功率，超越 GPT-4o 40.3%
 - **Look Inward to Explore Outward**: 通过 Hierarchical RL 从 LLM 内部状态学习温度策略，为 RLVR 探索-利用权衡提供新思路
-- **R-Diverse**: 揭示 Self-Play 中的 Diversity Illusion 问题，提出 Memory-Augmented Penalty 和 Skill-Aware Measurement
+- **Consistency of Large Reasoning Models**: 系统评估 9 个前沿推理模型在多轮对抗攻击下的鲁棒性，识别出 5 种失效模式
 
 ---
 
@@ -119,53 +119,7 @@ draft: false
 
 ---
 
-### 3. R-Diverse: Mitigating Diversity Illusion in Self-Play LLM Training
-
-#### Meta
-- **Title**: R-Diverse: Mitigating Diversity Illusion in Self-Play LLM Training
-- **Link**: [arXiv:2602.13103](https://arxiv.org/abs/2602.13103)
-- **Venue**: arXiv preprint
-- **Date**: 2026-02-13
-- **Tags**: Self-Play, RL, Reasoning, Diversity
-- **推荐度**: ⭐⭐⭐ 必读
-- **TL;DR**: 揭示 Self-Play 中的 Diversity Illusion 问题，提出 Memory-Augmented Penalty 和 Skill-Aware Measurement，在 10 个 benchmark 上持续超越 R-Zero
-
-#### Problem & Contribution
-- **解决的问题**: Self-Play（如 R-Zero）在迭代过程中出现非持续性改进，早期收益随继续训练而退化
-- **核心想法/方法一句话**: Diversity Illusion 表现为训练信号看似多样但坍缩为重复模式，包括局部多样性幻觉（仅 batch 内多样）和表面多样性幻觉（问题表面不同但推理技能相同）
-- **主要贡献**:
-  1. 首次系统分析 Self-Play 中的 Diversity Illusion 问题
-  2. 提出 Memory-Augmented Penalty (MAP)，使用持久记忆库跨迭代阻止重复
-  3. 提出 Skill-Aware Measurement (SAM)，基于推理技能而非问题表面评估多样性
-
-#### Method
-- **方法结构/流程**:
-  1. **Challenger-Solver 循环**: Challenger 生成针对 Solver 能力的问题，Solver 在生成数据上优化
-  2. **MAP**: 维护跨迭代的记忆库，惩罚重复出现的问题模式
-  3. **SAM**: 评估问题所需的推理技能组合，确保技能级多样性
-  4. **对齐训练**: MAP 和 SAM 协同工作，确保持续改进
-
-- **关键设计**:
-  - 局部多样性幻觉：仅 batch 内强制多样，导致跨迭代模式循环
-  - 表面多样性幻觉：问题表述不同但核心推理技能相同
-  - 技能感知：基于推理技能而非表面特征评估多样性
-
-#### Evidence
-- **Benchmark / setting**: 10 个数学和通用推理 benchmark
-- **对比对象**: R-Zero 及其他 Self-Play 方法
-- **关键结果**:
-  - 在更多迭代中保持改进
-  - 在 10 个 benchmark 上持续超越 prior self-play 方法
-  - 代码开源: https://github.com/Gengsheng-Li/R-Diverse
-
-#### Takeaways
-- **可以迁移到什么场景**: Self-Play 训练、数据生成、课程学习
-- **风险/注意点**: 记忆库和技能评估增加计算开销
-- **下一步动作**: 阅读代码实现，探索在其他推理任务上的应用
-
----
-
-### 4. Consistency of Large Reasoning Models Under Multi-Turn Attacks
+### 3. Consistency of Large Reasoning Models Under Multi-Turn Attacks
 
 #### Meta
 - **Title**: Consistency of Large Reasoning Models Under Multi-Turn Attacks
@@ -213,7 +167,7 @@ draft: false
 
 ---
 
-### 5. BrowseComp-V^3: A Visual, Vertical, and Verifiable Benchmark for Multimodal Browsing Agents
+### 4. BrowseComp-V^3: A Visual, Vertical, and Verifiable Benchmark for Multimodal Browsing Agents
 
 #### Meta
 - **Title**: BrowseComp-$V^3$: A Visual, Vertical, and Verifiable Benchmark for Multimodal Browsing Agents
@@ -253,7 +207,7 @@ draft: false
 
 ---
 
-### 6. LCSB: Layer-Cyclic Selective Backpropagation for Memory-Efficient On-Device LLM Fine-Tuning
+### 5. LCSB: Layer-Cyclic Selective Backpropagation for Memory-Efficient On-Device LLM Fine-Tuning
 
 #### Meta
 - **Title**: LCSB: Layer-Cyclic Selective Backpropagation for Memory-Efficient On-Device LLM Fine-Tuning
@@ -306,16 +260,18 @@ draft: false
 |------|--------|-------|--------|
 | Think Fast and Slow | ⭐⭐⭐ | 步级别认知深度自适应，82.3% ALFWorld 成功率 | 复现或探索无标签层次发现 |
 | Look Inward to Explore Outward | ⭐⭐⭐ | Hierarchical RL 学习温度策略，自适应探索-利用 | 集成到 RLVR 代码库 |
-| R-Diverse | ⭐⭐⭐ | 揭示 Diversity Illusion，MAP+SAM 持续改进 | 阅读代码，应用到其他任务 |
 | Consistency of Large Reasoning Models | ⭐⭐⭐ | 推理模型对抗鲁棒性系统评估，5种失效模式 | 关注推理轨迹防御机制 |
 | BrowseComp-V^3 | ⭐⭐ | 多模态浏览 Agent benchmark，SOTA 仅 36% | 关注后续 Agent 改进工作 |
 | LCSB | ⭐⭐ | 层循环选择性反向传播，1.40x 加速 | 集成到端侧训练框架 |
 
-**今日趋势观察**：
+**今日趋势观察**（已更新）：
 1. **Agent 认知自适应成为热点**：从固定思考模式转向动态认知深度调整，显著提升效率
 2. **RLVR 探索机制精细化**：从静态温度转向基于内部状态的自适应温度策略
-3. **Self-Play 多样性问题被重视**：Diversity Illusion 的揭示为持续改进提供新方向
+3. **Reasoning 模型安全性受关注**：多轮对抗攻击揭示推理能力≠鲁棒性，需重新设计防御机制
+4. **端侧训练效率优化**：选择性反向传播等内存优化技术让 LLM 微调更贴近实际部署
 
 ---
 
 *Curated by Amy 🤖*
+
+> **勘误**: 初版错误地包含了昨日已报道的 R-Diverse 论文，现已移除。感谢提醒！
