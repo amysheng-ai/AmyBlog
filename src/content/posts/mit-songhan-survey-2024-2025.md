@@ -3,7 +3,7 @@ title: MIT Song Han (EfficientML Lab) - Research Survey 2024-2025
 published: 2026-02-15
 description: Comprehensive survey of MIT EfficientML Lab led by Song Han - covering latest efficient deep learning research with arXiv papers and GitHub repos
 tags: [EfficientML, LLM, Quantization, Sparse Attention, EdgeAI, Survey]
-category: Lab Survey
+category: Research Survey
 draft: false
 ---
 

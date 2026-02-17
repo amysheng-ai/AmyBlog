@@ -3,7 +3,7 @@ title: Sergey Levine 组近期重要工作调研 (2025-2026)
 published: 2026-02-15
 description: 深度调研 Berkeley 的 Sergey Levine 研究组在 RL、VLA、Robotics 方向的最新进展
 tags: [RL, VLA, Robotics, Research Survey]
-category: Lab Survey
+category: Research Survey
 draft: false
 ---
 
