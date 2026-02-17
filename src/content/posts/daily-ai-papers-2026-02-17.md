@@ -1,8 +1,8 @@
 ---
 title: "Daily AI Papers - 2026年02月17日"
 published: 2026-02-17
-description: "精选AI论文日报：Agent认知自适应、RLVR温度策略学习、Reasoning模型对抗鲁棒性、LLM效率优化"
-tags: [Daily-Papers, Agent, RLVR, Reasoning, LLM-Efficiency]
+description: "精选AI论文日报：长程搜索Agent、Web Agent世界模型、自适应记忆架构、多模态推理冲突诊断、CoT推理动力学"
+tags: [Daily-Papers, Agent, Reasoning, Memory, Multimodal, RLVR]
 category: Paper-Digest
 draft: false
 ---
@@ -11,246 +11,365 @@ draft: false
 
 ## 今日预览
 
-今天筛选出 **5篇高质量论文**，涵盖 Agent 认知自适应、RLVR 温度策略学习、Reasoning 模型对抗鲁棒性等核心方向。
+今天筛选出 **7篇高质量论文**，涵盖长程搜索Agent、Web Agent世界模型、自适应记忆架构、多模态推理冲突诊断等核心方向。
 
 **必读推荐**：
-- **Think Fast and Slow**: 首次实现 Agent 步级别认知深度自适应，Qwen2.5-7B 在 ALFWorld 达到 82.3% 成功率，超越 GPT-4o 40.3%
-- **Look Inward to Explore Outward**: 通过 Hierarchical RL 从 LLM 内部状态学习温度策略，为 RLVR 探索-利用权衡提供新思路
-- **Consistency of Large Reasoning Models**: 系统评估 9 个前沿推理模型在多轮对抗攻击下的鲁棒性，识别出 5 种失效模式
+- **REDSearcher**: 统一框架实现长程搜索Agent的复杂任务合成、中段训练和后期训练，在文本和多模态搜索基准上达到SOTA
+- **AutoWebWorld**: 首个基于有限状态机合成可验证Web环境的框架，$0.04/轨迹生成11,663条验证轨迹，7B模型在WebVoyager上超越所有基线
+- **The Potential of CoT for Reasoning**: 提出"势函数"量化CoT各部分对正确答案的贡献度，发现20%的部分CoT可"解锁"弱模型性能
+- **Diagnosing Knowledge Conflict**: 系统诊断多模态长链推理中的知识冲突，揭示冲突信号在中后期层集中编码等四大机制
 
 ---
 
 ## 论文详解
 
-### 1. Think Fast and Slow: Step-Level Cognitive Depth Adaptation for LLM Agents
+### 1. REDSearcher: A Scalable and Cost-Efficient Framework for Long-Horizon Search Agents
 
 #### Meta
-- **Title**: Think Fast and Slow: Step-Level Cognitive Depth Adaptation for LLM Agents
-- **Link**: [arXiv:2602.12662](https://arxiv.org/abs/2602.12662)
+- **Title**: REDSearcher: A Scalable and Cost-Efficient Framework for Long-Horizon Search Agents
+- **Link**: [arXiv:2602.14234](https://arxiv.org/abs/2602.14234)
 - **Venue**: arXiv preprint
-- **Date**: 2026-02-13
-- **Tags**: Agent, Reasoning, Cognitive-Adaptation
+- **Date**: 2026-02-16
+- **Tags**: Agent, Search, Long-Horizon, RL, Multimodal
 - **推荐度**: ⭐⭐⭐ 必读
-- **TL;DR**: 基于 ACT-R 认知理论，实现 Agent 在步级别动态调整认知深度，在简单步骤快速响应，复杂步骤深度思考
+- **TL;DR**: 统一框架联合设计复杂任务合成、中段训练和后期训练，通过图拓扑和证据分散度精确控制任务难度，实现可扩展的长程搜索Agent优化
 
 #### Problem & Contribution
-- **解决的问题**: 现有 LLM Agent 要么全程不思考（非思考模型），要么全程深度思考（思考模型），无法根据任务步骤的认知需求动态调整，导致效率低下
-- **核心想法/方法一句话**: 提出 CogRouter 框架，通过 Cognition-aware SFT 和 Cognition-aware Policy Optimization 训练 Agent 在每一步选择四种认知层次之一（从本能反应到战略规划）
+- **解决的问题**: 长程搜索Agent训练面临高质量搜索轨迹稀疏、奖励信号稀缺、交互式rollout成本高昂等瓶颈
+- **核心想法/方法一句话**: 将任务合成建模为双约束优化问题，通过图拓扑和证据分散度精确控制任务难度，并引入工具增强查询鼓励主动工具使用
 - **主要贡献**:
-  1. 首个步级别认知深度自适应的 Agent 框架，基于 ACT-R 理论设计四级认知层次
-  2. 提出 Cognition-aware Policy Optimization (CoPO)，通过置信度感知优势重加权实现步级别信用分配
-  3. 在 ALFWorld 和 ScienceWorld 达到 SOTA，使用 62% 更少 token
+  1. 双约束任务合成：图拓扑 + 证据分散度精确控制任务难度
+  2. 工具增强查询：鼓励主动工具使用而非被动回忆
+  3. 中段训练强化原子能力（知识、规划、函数调用），降低下游训练成本
+  4. 本地模拟环境实现快速低成本的RL实验迭代
 
 #### Method
 - **方法结构/流程**:
-  1. **认知层次定义**: 基于 ACT-R 理论设计四级认知模式（L1 本能反应 → L4 战略规划）
-  2. **CoSFT 阶段**: 使用人工标注的认知标签进行监督微调，建立稳定的层次特定行为模式
-  3. **CoPO 阶段**: 通过置信度感知优势重加权，优化温度策略选择
-  4. **核心洞察**: 适当的认知深度应最大化动作的置信度
+  1. **任务合成**: 图拓扑约束 + 证据分散度约束生成复杂任务
+  2. **中段训练**: 强化知识检索、规划、函数调用等原子能力
+  3. **后期训练**: 基于高质量轨迹的强化学习优化
+  4. **工具增强**: 查询改写鼓励主动调用外部工具
 
 - **关键设计**:
-  - 四级认知层次：L1（无思考）、L2（轻量思考）、L3（深度思考）、L4（战略推理）
-  - 置信度感知优势重加权：高置信度动作获得更高优势权重
-  - 残差连接保证梯度流动，AdamW 动量为未选中层提供隐式更新
+  - 双约束优化确保任务难度可控且高质量
+  - 本地模拟环境支持快速算法迭代
+  - 原子能力预训练降低下游数据需求
 
 - **训练/推理成本**:
-  - 模型: Qwen2.5-7B
-  - 数据集: ALFWorld, ScienceWorld
-  - Token 效率: 比基线减少 62% token 使用
+  - 将开源10K高质量文本搜索轨迹、5K多模态轨迹、1K RL查询集
 
 #### Evidence
-- **Benchmark / setting**: ALFWorld (室内任务), ScienceWorld (科学实验)
-- **对比对象**: GPT-4o, OpenAI-o3, GRPO, ReAct
+- **Benchmark / setting**: 文本和多模态搜索Agent基准
+- **对比对象**: SOTA搜索Agent方法
 - **关键结果**:
-  - ALFWorld 成功率: 82.3% (Qwen2.5-7B)
-  - 相比 GPT-4o 提升: +40.3%
-  - 相比 OpenAI-o3 提升: +18.3%
-  - 相比 GRPO 提升: +14.0%
+  - 在文本和多模态搜索Agent基准上达到SOTA性能
+  - 中段训练显著降低高质量轨迹收集成本
+  - 本地模拟环境支持快速RL实验迭代
 
 #### Takeaways
-- **可以迁移到什么场景**: 长程任务规划、多步决策、资源受限的端侧 Agent
-- **风险/注意点**: 认知层次标签获取成本较高，需要人工标注或自动标注策略
-- **下一步动作**: 尝试在本地 Qwen2.5-7B 上复现，探索无标签的层次发现方法
+- **可以迁移到什么场景**: 长程信息检索、多跳问答、研究助手Agent
+- **风险/注意点**: 任务合成质量对最终性能影响大，需要精心设计的约束条件
+- **下一步动作**: 关注开源的轨迹数据集和模型检查点，尝试复现并扩展到新领域
 
 ---
 
-### 2. Look Inward to Explore Outward: Learning Temperature Policy from LLM Internal States via Hierarchical RL
+### 2. AutoWebWorld: Synthesizing Infinite Verifiable Web Environments via Finite State Machines
 
 #### Meta
-- **Title**: Look Inward to Explore Outward: Learning Temperature Policy from LLM Internal States via Hierarchical RL
-- **Link**: [arXiv:2602.13035](https://arxiv.org/abs/2602.13035)
+- **Title**: AutoWebWorld: Synthesizing Infinite Verifiable Web Environments via Finite State Machines
+- **Link**: [arXiv:2602.14296](https://arxiv.org/abs/2602.14296)
 - **Venue**: arXiv preprint
-- **Date**: 2026-02-13
-- **Tags**: RLVR, Temperature-Policy, Hierarchical-RL
+- **Date**: 2026-02-15
+- **Tags**: Web-Agent, World-Model, Data-Synthesis, FSM
 - **推荐度**: ⭐⭐⭐ 必读
-- **TL;DR**: 提出 Introspective LLM，通过 Hierarchical RL 从隐藏状态学习采样温度策略，实现 RLVR 中的自适应探索-利用权衡
+- **TL;DR**: 首个基于有限状态机合成可控可验证Web环境的框架，$0.04/轨迹生成11,663条验证轨迹，7B Web GUI Agent在WebVoyager上超越所有基线
 
 #### Problem & Contribution
-- **解决的问题**: RLVR 中采样温度控制探索-利用权衡，但现有方法使用静态温度或启发式调整，与任务级奖励解耦
-- **核心想法/方法一句话**: 在每个解码步骤，模型基于隐藏状态选择温度，联合优化温度策略和 token 策略
+- **解决的问题**: 从真实网站收集交互轨迹昂贵且难以验证，状态转换隐式导致依赖不一致的外部验证器
+- **核心想法/方法一句话**: 将Web环境建模为有限状态机(FSM)，使用Coding Agent将FSM转换为交互式网站，实现程序化验证
 - **主要贡献**:
-  1. 首个从 LLM 内部状态学习温度策略的 Hierarchical RL 框架
-  2. 温度选择与 token 采样联合优化，实现细粒度探索控制
-  3. 数学推理任务上超越固定温度和启发式基线
+  1. 首个基于FSM的可控可验证Web环境合成框架
+  2. 显式定义所有状态、动作和转换规则，支持程序化验证
+  3. 全自动搜索-验证流水线，$0.04/轨迹生成11,663条验证轨迹
+  4. 7B模型在WebVoyager上超越所有基线，展现清晰的数据缩放律
 
 #### Method
 - **方法结构/流程**:
-  1. **上层策略**: 基于当前隐藏状态选择温度
-  2. **下层策略**: 从选定温度对应的分布中采样 token
-  3. **联合优化**: 使用坐标上升法从下游奖励联合优化两层策略
-  4. **可解释性**: 学习到的温度策略与推理不确定性对齐
+  1. **FSM建模**: 将Web环境建模为有限状态机
+  2. **代码生成**: Coding Agent将FSM转换为交互式网站
+  3. **程序化验证**: 动作正确性检查、任务成功确认
+  4. **数据合成**: 全自动搜索-验证流水线生成轨迹
 
 - **关键设计**:
-  - 温度作为高层动作，影响低层 token 采样
-  - 坐标上升优化：交替优化温度策略和 token 策略
-  - 内部状态（隐藏层）作为温度选择的观测
+  - FSM显式状态定义支持精确验证
+  - 目标状态确认任务完成
+  - 预定义规则检查动作正确性
+
+- **训练/推理成本**:
+  - 生成成本: $0.04/轨迹
+  - 生成规模: 11,663条验证轨迹（29个多样化Web环境）
+  - 模型规模: 7B Web GUI Agent
 
 #### Evidence
-- **Benchmark / setting**: 数学推理 benchmark
-- **对比对象**: 固定温度、启发式温度调整
+- **Benchmark / setting**: WebVoyager, Online-Mind2Web
+- **对比对象**: SOTA Web GUI Agent基线
 - **关键结果**:
-  - 学习到的温度策略超越所有固定温度基线
-  - 展现出与推理不确定性对齐的可解释探索行为
+  - 7B模型在WebVoyager上15步内超越所有基线
+  - 数据缩放律：合成数据量增加，WebVoyager和Online-Mind2Web性能持续提升
+  - 真实世界性能显著提升
 
 #### Takeaways
-- **可以迁移到什么场景**: RLVR 训练、多步推理任务、需要自适应探索的生成任务
-- **风险/注意点**: 增加了一层策略学习，训练复杂度提升
-- **下一步动作**: 结合到现有的 RLVR 代码库中，测试在 GSM8K 上的效果
+- **可以迁移到什么场景**: Web Agent训练、GUI自动化、数据合成
+- **风险/注意点**: 合成环境与真实环境存在差距，需要考虑领域迁移
+- **下一步动作**: 关注代码和数据集开源，探索扩展到其他GUI环境（如移动端、桌面应用）
 
 ---
 
-### 3. Consistency of Large Reasoning Models Under Multi-Turn Attacks
+### 3. The Potential of CoT for Reasoning: A Closer Look at Trace Dynamics
 
 #### Meta
-- **Title**: Consistency of Large Reasoning Models Under Multi-Turn Attacks
-- **Link**: [arXiv:2602.13093](https://arxiv.org/abs/2602.13093)
+- **Title**: The Potential of CoT for Reasoning: A Closer Look at Trace Dynamics
+- **Link**: [arXiv:2602.14903](https://arxiv.org/abs/2602.14903)
 - **Venue**: arXiv preprint
-- **Date**: 2026-02-13
-- **Tags**: Reasoning, Safety, Adversarial-Robustness
+- **Date**: 2026-02-16
+- **Tags**: Chain-of-Thought, Reasoning, Interpretability, LLM
 - **推荐度**: ⭐⭐⭐ 必读
-- **TL;DR**: 系统评估 9 个前沿推理模型在多轮对抗攻击下的鲁棒性，发现推理能力提供有意义但不完整的鲁棒性，识别出 5 种失效模式
+- **TL;DR**: 提出"势函数"量化CoT各部分对正确答案的贡献度，发现CoT的非单调性、洞察峰值和幸运猜测现象，揭示20%的部分CoT可"解锁"弱模型性能
 
 #### Problem & Contribution
-- **解决的问题**: 大型推理模型在复杂任务上表现优异，但其在多轮对抗压力下的鲁棒性尚未充分探索
-- **核心想法/方法一句话**: 评估 9 个前沿推理模型在多轮对抗攻击下的表现，通过轨迹分析识别失效模式
+- **解决的问题**: CoT推理成功的驱动因素尚不清楚，难以理解CoT哪些部分实际贡献于最终答案
+- **核心想法/方法一句话**: 引入"势函数"量化CoT各部分增加正确答案似然的程度，通过竞赛级数学问题深入分析CoT轨迹动态
 - **主要贡献**:
-  1. 首个针对推理模型的多轮对抗攻击系统评估
-  2. 识别 5 种失效模式：Self-Doubt、Social Conformity、Suggestion Hijacking、Emotional Susceptibility、Reasoning Fatigue
-  3. 发现 CARG 对推理模型失效，随机置信度嵌入反而优于目标提取
+  1. 提出"势函数"量化CoT各部分的贡献度
+  2. 发现CoT的三个关键模式：非单调性（推理分支）、洞察峰值、幸运猜测
+  3. 提出CoT可迁移性，发现20%的部分CoT可解锁弱模型在难题上的性能
+  4. 揭示CoT推理机制的内在可迁移性
 
 #### Method
 - **方法结构/流程**:
-  1. **攻击类型**: 误导性建议、社会压力等
-  2. **模型评估**: 9 个前沿推理模型 vs 指令微调基线
-  3. **轨迹分析**: 分析失败案例的推理轨迹
-  4. **防御测试**: 测试 CARG (Confidence-Aware Response Generation) 有效性
+  1. **势函数定义**: 量化给定CoT部分增加正确答案似然的程度
+  2. **轨迹分析**: 通过势函数透镜分析竞赛级数学问题的推理轨迹
+  3. **可迁移性研究**: 测量弱模型在强模型部分CoT下的性能提升
 
 - **关键发现**:
-  - 推理模型显著优于指令微调基线
-  - 所有模型都表现出独特的脆弱性特征
-  - 误导性建议普遍有效，社会压力效果因模型而异
-  - Self-Doubt 和 Social Conformity 占失败的 50%
+  - **非单调性**: 推理分支导致势函数强烈非单调
+  - **洞察峰值**: 尖锐但难以解释的峰值对应推理洞察和跳跃
+  - **幸运猜测**: 模型有时无相关论证即得出正确答案
+  - **可迁移性**: 20%的部分CoT可"解锁"弱模型性能
 
 #### Evidence
-- **Benchmark / setting**: 多轮对抗攻击场景
-- **对比对象**: 9 个推理模型 vs 指令微调基线
+- **Benchmark / setting**: 竞赛级数学问题
+- **对比对象**: 不同强度模型的CoT轨迹
 - **关键结果**:
-  - 推理模型比基线更鲁棒，但仍存在显著漏洞
-  - 5 种失效模式被识别并量化
-  - CARG 对推理模型失效（过度自信导致）
-  - 随机置信度嵌入 > 目标提取
+  - 势函数揭示CoT推理的复杂动态模式
+  - 20%的部分CoT可显著提升弱模型在先前无法解决的问题上的性能
+  - CoT机制具有内在可迁移性
 
 #### Takeaways
-- **可以迁移到什么场景**: 安全对齐、对抗训练、红队测试
-- **风险/注意点**: 推理能力≠对抗鲁棒性，需要重新设计基于置信度的防御
-- **下一步动作**: 关注基于推理轨迹的防御机制研究
+- **可以迁移到什么场景**: CoT优化、模型蒸馏、推理过程可视化
+- **风险/注意点**: 势函数计算成本较高，需要大量采样
+- **下一步动作**: 探索基于势函数的CoT修剪和优化策略，研究知识迁移机制
 
 ---
 
-### 4. BrowseComp-V^3: A Visual, Vertical, and Verifiable Benchmark for Multimodal Browsing Agents
+### 4. Diagnosing Knowledge Conflict in Multimodal Long-Chain Reasoning
 
 #### Meta
-- **Title**: BrowseComp-$V^3$: A Visual, Vertical, and Verifiable Benchmark for Multimodal Browsing Agents
-- **Link**: [arXiv:2602.12876](https://arxiv.org/abs/2602.12876)
+- **Title**: Diagnosing Knowledge Conflict in Multimodal Long-Chain Reasoning
+- **Link**: [arXiv:2602.14518](https://arxiv.org/abs/2602.14518)
 - **Venue**: arXiv preprint
-- **Date**: 2026-02-13
-- **Tags**: Agent, Multimodal, Benchmark, Web-Browsing
-- **推荐度**: ⭐⭐ 可选
-- **TL;DR**: 提出新的多模态浏览 Agent benchmark，强调深度、多层次、跨模态推理，SOTA 模型仅达 36% 准确率
+- **Date**: 2026-02-16
+- **Tags**: Multimodal, Knowledge-Conflict, Long-CoT, Interpretability
+- **推荐度**: ⭐⭐⭐ 必读
+- **TL;DR**: 系统诊断多模态长链推理中的知识冲突，区分输入级客观冲突和过程级有效冲突，揭示冲突信号在中后期层集中编码等四大机制
 
 #### Problem & Contribution
-- **解决的问题**: 现有 MLLM 浏览 benchmark 在任务复杂度、证据可访问性、评估粒度方面存在局限
-- **核心想法/方法一句话**: 300 个跨领域精心设计的难题，要求文本和视觉模态的深度多跳推理，所有证据可公开搜索
+- **解决的问题**: MLLM在长链推理中常因不同知识源提供冲突信号而失败，但缺乏统一的形式化理解和诊断方法
+- **核心想法/方法一句话**: 在统一的知识冲突概念下形式化失败，区分输入级客观冲突和过程级有效冲突，通过探测内部表征揭示冲突处理机制
 - **主要贡献**:
-  1. 300 个跨领域高难度问题，强调深度多级跨模态推理
-  2. 专家验证的子目标驱动过程评估机制
-  3. 提出 OmniSeeker 统一多模态浏览 Agent 框架
+  1. 统一形式化知识冲突，区分客观冲突和有效冲突
+  2. 发现四大机制：线性可分性、深度定位、层次一致性、方向不对称性
+  3. 揭示冲突信号在中后期层集中编码
+  4. 提供机制层面的多模态长CoT失败诊断和控制方法
 
 #### Method
 - **方法结构/流程**:
-  1. **数据构建**: 300 个问题，证据跨页面交错分布
-  2. **验证机制**: 所有证据必须可公开搜索，确保可复现
-  3. **评估**: 最终答案准确性 + 子目标驱动过程评估
-  4. **Agent 设计**: OmniSeeker 集成多种搜索和视觉感知工具
+  1. **冲突形式化**: 输入级客观冲突 vs 过程级有效冲突
+  2. **内部表征探测**: 分析不同冲突类型的编码方式
+  3. **机制发现**: 线性可分性、深度定位、层次一致性、方向不对称性
+
+- **关键发现**:
+  - **线性可分性**: 不同冲突类型编码为线性可分的特征而非纠缠
+  - **深度定位**: 冲突信号集中在中后期层
+  - **层次一致性**: 沿轨迹聚合token级信号可稳健恢复输入级冲突类型
+  - **方向不对称性**: 强化模型隐式源偏好比强制反向更容易
 
 #### Evidence
-- **Benchmark / setting**: 300 个跨领域问题
-- **对比对象**: SOTA MLLM
+- **Benchmark / setting**: 多模态长链推理任务
+- **对比对象**: 不同冲突类型和MLLM
 - **关键结果**:
-  - SOTA 模型准确率仅 36%
-  - 揭示多模态信息整合和细粒度感知的关键瓶颈
+  - 冲突信号在中后期层显著集中
+  - 不同冲突类型具有线性可分的内部表征
+  - 方向不对称性揭示模型偏好的可操控性
 
 #### Takeaways
-- **可以迁移到什么场景**: Web Agent 评估、多模态推理研究
-- **风险/注意点**: Benchmark 难度极高，可能不适合初级模型评估
-- **下一步动作**: 关注后续基于此 benchmark 的 Agent 改进工作
+- **可以迁移到什么场景**: 多模态推理诊断、知识冲突消解、模型对齐
+- **风险/注意点**: 冲突检测需要访问内部表征，可能不适用于黑盒API
+- **下一步动作**: 基于发现开发冲突感知的推理控制机制，探索冲突消解策略
 
 ---
 
-### 5. LCSB: Layer-Cyclic Selective Backpropagation for Memory-Efficient On-Device LLM Fine-Tuning
+### 5. Choosing How to Remember: Adaptive Memory Structures for LLM Agents
 
 #### Meta
-- **Title**: LCSB: Layer-Cyclic Selective Backpropagation for Memory-Efficient On-Device LLM Fine-Tuning
-- **Link**: [arXiv:2602.13073](https://arxiv.org/abs/2602.13073)
-- **Venue**: arXiv preprint (under review)
-- **Date**: 2026-02-13
-- **Tags**: Efficient-LLM, On-Device, Memory-Optimization, LoRA
-- **推荐度**: ⭐⭐ 可选
-- **TL;DR**: 提出 Layer-Cyclic Selective Backpropagation，每步仅计算部分层的梯度，通过残差连接和 AdamW 动量保证收敛，实现 1.40x 加速且质量退化 <2%
+- **Title**: Choosing How to Remember: Adaptive Memory Structures for LLM Agents
+- **Link**: [arXiv:2602.14038](https://arxiv.org/abs/2602.14038)
+- **Venue**: arXiv preprint
+- **Date**: 2026-02-15
+- **Tags**: Agent, Memory, Long-Context, Adaptive-Architecture
+- **推荐度**: ⭐⭐⭐ 必读
+- **TL;DR**: 提出FluxMem框架，让Agent基于交互级特征自适应选择记忆结构，引入三级记忆层次和Beta混合模型门控，在PERSONAMEM和LoCoMo上平均提升9.18%和6.14%
 
 #### Problem & Contribution
-- **解决的问题**: 端侧 LLM 微调内存受限，MeBP 需要反向计算所有层，权重解压占 32-42% 反向时间
-- **核心想法/方法一句话**: 每步仅选择部分层计算梯度，残差连接保证梯度流动，AdamW 动量为未选中层提供隐式更新
+- **解决的问题**: 现有Agent记忆系统采用一刀切结构，不将记忆结构选择建模为上下文自适应决策，限制处理异构交互模式的能力
+- **核心想法/方法一句话**: 为Agent配备多种互补记忆结构，基于交互级特征显式学习结构选择，引入三级记忆层次和分布感知记忆融合
 - **主要贡献**:
-  1. 首个层循环选择性反向传播方法，实现内存-效率权衡
-  2. 理论解释：LCSB 等价于 LoRA 参数空间的块坐标下降
-  3. 4-bit 量化设置下展现卓越稳定性（完整反向传播发散的模型 LCSB 能稳定收敛）
+  1. 首个自适应记忆组织统一框架，支持多种记忆结构动态选择
+  2. 三级记忆层次支持稳健的长程记忆演化
+  3. Beta混合模型概率门控实现分布感知记忆融合
+  4. 在PERSONAMEM和LoCoMo上分别提升9.18%和6.14%
 
 #### Method
 - **方法结构/流程**:
-  1. **层选择**: 每步循环选择部分层计算梯度
-  2. **梯度流动**: 残差连接保证未选中层的梯度通过恒等路径传播
-  3. **隐式更新**: AdamW 动量为未选中层提供隐式参数更新
-  4. **理论分析**: 证明 LCSB 等价于 LoRA 空间的块坐标下降
+  1. **多结构支持**: 配备多种互补记忆结构
+  2. **自适应选择**: 基于交互级特征学习结构选择
+  3. **三级层次**: 工作记忆、短期记忆、长期记忆
+  4. **概率融合**: Beta混合模型门控替代脆弱相似度阈值
 
 - **关键设计**:
-  - 循环层选择策略
-  - 残差连接 + AdamW 动量的隐式更新机制
-  - 4-bit 量化下的隐式正则化效应
+  - 离线监督学习结构选择策略
+  - 下游响应质量和记忆利用率作为监督信号
+  - 分布感知融合替代硬阈值
+
+- **训练/推理成本**:
+  - 基于下游任务质量进行离线监督学习
+  - 无需在线微调
 
 #### Evidence
-- **Benchmark / setting**: 5 个模型，3 个任务
-- **对比对象**: 完整反向传播 (MeBP), MeZO
+- **Benchmark / setting**: PERSONAMEM, LoCoMo（长程对话基准）
+- **对比对象**: 固定记忆结构基线
 - **关键结果**:
-  - 最高 1.40x 加速
-  - 质量退化 <2%
-  - 4-bit 量化下：3B 模型完整反向传播发散，LCSB 稳定收敛
-  - MeZO 梯度估计与真实梯度余弦相似度 ≈0.001
+  - PERSONAMEM上平均提升9.18%
+  - LoCoMo上提升6.14%
+  - 长程记忆演化稳健性显著提升
 
 #### Takeaways
-- **可以迁移到什么场景**: 端侧 LLM 微调、内存受限环境、LoRA 训练
-- **风险/注意点**: 层选择策略需要针对不同模型调优
-- **下一步动作**: 尝试集成到现有端侧训练框架
+- **可以迁移到什么场景**: 长程对话Agent、个性化助手、长期陪伴AI
+- **风险/注意点**: 结构选择策略需要针对特定领域调优
+- **下一步动作**: 探索更多记忆结构变体，研究在线自适应策略
+
+---
+
+### 6. Cognitive Chunking for Soft Prompts: Accelerating Compressor Learning via Block-wise Causal Masking
+
+#### Meta
+- **Title**: Cognitive Chunking for Soft Prompts: Accelerating Compressor Learning via Block-wise Causal Masking
+- **Link**: [arXiv:2602.13980](https://arxiv.org/abs/2602.13980)
+- **Venue**: arXiv preprint
+- **Date**: 2026-02-15
+- **Tags**: Efficient-LLM, Context-Compression, Soft-Prompt, Training-Acceleration
+- **推荐度**: ⭐⭐ 可选
+- **TL;DR**: 提出PIC方法，通过块级因果掩码将记忆token的感受野限制在局部块，降低压缩器训练难度，在64×压缩比下F1提升29.8%，训练时间减少40%
+
+#### Problem & Contribution
+- **解决的问题**: 长上下文显著增加推理延迟，软提示压缩需要捕获全局依赖，训练难度大、数据需求高
+- **核心想法/方法一句话**: 借鉴人类工作记忆的组块机制，通过块级因果掩码限制记忆token的感受野为顺序局部块
+- **主要贡献**:
+  1. 提出并行迭代压缩(PIC)，通过简单注意力掩码修改降低压缩器训练难度
+  2. 显式限制记忆token的感受野为局部块，降低捕获全局依赖的难度
+  3. 在64×压缩比下F1提升29.8%、EM提升40.7%
+  4. 训练时间减少约40%
+
+#### Method
+- **方法结构/流程**:
+  1. **块级掩码**: 修改Transformer注意力掩码限制感受野
+  2. **局部压缩**: 每个记忆token仅关注对应局部块
+  3. **并行处理**: 迭代并行压缩
+  4. **训练加速**: 降低训练难度和数据需求
+
+- **关键设计**:
+  - 空间专业化：记忆嵌入相对原始token的空间特化
+  - 顺序局部块：保持序列顺序的局部上下文
+  - 无需额外预训练数据
+
+- **训练/推理成本**:
+  - 训练时间减少约40%（16×压缩器）
+  - 推理时标准压缩-解压流程
+
+#### Evidence
+- **Benchmark / setting**: QA任务等多个下游任务
+- **对比对象**: 竞争基线压缩方法
+- **关键结果**:
+  - 64×压缩比：F1提升29.8%，EM提升40.7%
+  - 16×压缩器训练时间减少40%
+  - 高压缩场景优势尤为显著
+
+#### Takeaways
+- **可以迁移到什么场景**: 长上下文压缩、文档摘要、RAG系统
+- **风险/注意点**: 块大小需要根据任务特性调优
+- **下一步动作**: 探索自适应块大小策略，研究与其他压缩技术的组合
+
+---
+
+### 7. Plan-MCTS: Plan Exploration for Action Exploitation in Web Navigation
+
+#### Meta
+- **Title**: Plan-MCTS: Plan Exploration for Action Exploitation in Web Navigation
+- **Link**: [arXiv:2602.14083](https://arxiv.org/abs/2602.14083)
+- **Venue**: arXiv preprint
+- **Date**: 2026-02-15
+- **Tags**: Web-Navigation, MCTS, Planning, LLM-Agent
+- **推荐度**: ⭐⭐⭐ 必读
+- **TL;DR**: 将Web导航探索转移到语义规划空间，通过解耦战略规划与执行落地，将稀疏动作空间转化为密集规划树，在WebArena上达到SOTA
+
+#### Problem & Contribution
+- **解决的问题**: Web导航中应用树搜索面临稀疏有效路径导致探索效率低、噪声上下文稀释准确状态感知两大挑战
+- **核心想法/方法一句话**: 将探索转移到语义规划空间，解耦战略规划与执行落地，构建密集规划树和抽象语义历史
+- **主要贡献**:
+  1. 语义规划空间探索，将稀疏动作空间转化为密集规划树
+  2. 抽象语义历史蒸馏噪声上下文，提供精确状态感知
+  3. 双门控奖励严格验证物理可执行性和战略对齐
+  4. 结构细化实现失败子规划的on-policy修复
+
+#### Method
+- **方法结构/流程**:
+  1. **规划空间转移**: 在语义规划空间而非原始动作空间探索
+  2. **战略规划**: 生成高层语义规划
+  3. **执行落地**: 将规划映射为具体动作
+  4. **双门控奖励**: 验证可执行性和战略对齐
+  5. **结构细化**: 修复失败的子规划
+
+- **关键设计**:
+  - 规划-执行解耦
+  - 密集规划树提升探索效率
+  - 抽象语义历史过滤噪声
+
+- **训练/推理成本**:
+  - 标准MCTS搜索开销
+  - 额外规划层推理成本
+
+#### Evidence
+- **Benchmark / setting**: WebArena
+- **对比对象**: SOTA Web导航方法
+- **关键结果**:
+  - WebArena上达到SOTA性能
+  - 更高的任务有效性和搜索效率
+  - 相比现有方法显著提升
+
+#### Takeaways
+- **可以迁移到什么场景**: Web自动化、GUI Agent、长程任务规划
+- **风险/注意点**: 规划到动作的映射需要精心设计
+- **下一步动作**: 探索规划空间学习，研究跨网站泛化能力
 
 ---
 
@@ -258,20 +377,21 @@ draft: false
 
 | 论文 | 推荐度 | TL;DR | 下一步 |
 |------|--------|-------|--------|
-| Think Fast and Slow | ⭐⭐⭐ | 步级别认知深度自适应，82.3% ALFWorld 成功率 | 复现或探索无标签层次发现 |
-| Look Inward to Explore Outward | ⭐⭐⭐ | Hierarchical RL 学习温度策略，自适应探索-利用 | 集成到 RLVR 代码库 |
-| Consistency of Large Reasoning Models | ⭐⭐⭐ | 推理模型对抗鲁棒性系统评估，5种失效模式 | 关注推理轨迹防御机制 |
-| BrowseComp-V^3 | ⭐⭐ | 多模态浏览 Agent benchmark，SOTA 仅 36% | 关注后续 Agent 改进工作 |
-| LCSB | ⭐⭐ | 层循环选择性反向传播，1.40x 加速 | 集成到端侧训练框架 |
+| REDSearcher | ⭐⭐⭐ | 长程搜索Agent统一框架，双约束任务合成，SOTA性能 | 关注开源数据集，复现并扩展 |
+| AutoWebWorld | ⭐⭐⭐ | FSM合成可验证Web环境，$0.04/轨迹，7B模型超越基线 | 探索扩展到其他GUI环境 |
+| The Potential of CoT | ⭐⭐⭐ | 势函数量化CoT贡献，20%部分CoT解锁弱模型性能 | 基于势函数的CoT优化策略 |
+| Diagnosing Knowledge Conflict | ⭐⭐⭐ | 多模态长CoT知识冲突诊断，揭示四大机制 | 开发冲突感知推理控制机制 |
+| Choosing How to Remember | ⭐⭐⭐ | 自适应记忆结构选择，三级层次，Beta门控融合 | 探索在线自适应和更多结构变体 |
+| Cognitive Chunking | ⭐⭐ | 块级因果掩码降低压缩器训练难度，训练加速40% | 自适应块大小策略研究 |
+| Plan-MCTS | ⭐⭐⭐ | 语义规划空间探索，密集规划树，WebArena SOTA | 规划空间学习和跨网站泛化 |
 
-**今日趋势观察**（已更新）：
-1. **Agent 认知自适应成为热点**：从固定思考模式转向动态认知深度调整，显著提升效率
-2. **RLVR 探索机制精细化**：从静态温度转向基于内部状态的自适应温度策略
-3. **Reasoning 模型安全性受关注**：多轮对抗攻击揭示推理能力≠鲁棒性，需重新设计防御机制
-4. **端侧训练效率优化**：选择性反向传播等内存优化技术让 LLM 微调更贴近实际部署
+**今日趋势观察**：
+1. **Agent训练基础设施成熟化**: AutoWebWorld、WebWorld等世界模型框架让Web Agent训练从"野外采集"走向"可控合成"，大幅降低数据成本和验证难度
+2. **长程推理可解释性突破**: 从REDSearcher的任务难度量化到CoT势函数的贡献度分析，再到知识冲突的机制诊断，长程推理正在从黑盒走向可分析、可控制
+3. **记忆系统自适应化**: FluxMem、HyMem等框架让记忆结构选择成为上下文自适应决策，而非一刀切设计，更接近人类认知经济性原则
+4. **规划与执行解耦**: Plan-MCTS等方案将高层战略规划与低层执行落地解耦，在保持效率的同时提升复杂任务完成率
+5. **多模态冲突诊断**: 首次系统揭示多模态长CoT中的知识冲突处理机制，为可靠多模态推理提供理论基础
 
 ---
 
 *Curated by Amy 🤖*
-
-> **勘误**: 初版错误地包含了昨日已报道的 R-Diverse 论文，现已移除。感谢提醒！
