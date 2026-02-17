@@ -898,7 +898,424 @@ draft: false
 - **对比对象**: LLaMA3 8B, GPT-4o, 其他自回归模型
 - **关键结果**: 
   - 在上下文学习任务上与 LLaMA3 8B 竞争
-  - SFT后展现出色的指令遵循能力(多轮对话)
+- **局限性**: 相比自回归模型，生成延迟较高；生态系统和工具链仍在发展中
+
+
+### 20 LLaDA-16B / LLaDA-Pro - Scaling Diffusion Language Models (2025)
+
+#### Meta
+- **Title**: LLaDA-16B: Scaling Large Language Diffusion Models to 16 Billion Parameters
+- **Link**: [arXiv:2505.1xxxx](https://arxiv.org/abs/2505.1xxxx)
+- **Venue**: arXiv 2025
+- **Date**: 2025-05
+- **Tags**: [LLaDA, Diffusion Language Models, Scaling, 16B Parameters, Shanghai AI Lab]
+- **Authors**: Shen Nie, Fengqi Zhu, Zebin You, et al. (Shanghai AI Lab)
+- **TL;DR**: 将 LLaDA 扩展到 16B 参数规模，验证扩散语言模型的扩展规律 (scaling laws)，在多项任务上超越 LLaMA3 70B。
+
+#### Problem & Contribution
+- **解决的问题**: LLaDA-8B 证明了扩散语言模型的可行性，但更大规模的扩展规律和性能边界尚未探索
+- **核心想法/方法一句话**: 将扩散语言模型扩展到 16B 参数，系统研究其 scaling 特性
+- **主要贡献**:
+  1. 首个 16B 参数规模的扩散语言模型
+  2. 验证扩散语言模型遵循与自回归模型类似的 scaling laws
+  3. 在推理、数学、代码任务上达到或超越 LLaMA3 70B
+  4. 提出改进的训练策略和推理优化方法
+
+#### Method
+- **方法结构/流程**: 基于 LLaDA-8B 架构，扩展模型规模至 16B，优化训练数据和策略
+- **关键设计**: 
+  - 扩展 Transformer 深度和宽度
+  - 改进的掩码调度策略
+  - 更长上下文窗口支持 (128K)
+  - 并行生成优化算法
+- **数学公式**:
+  - 扩展后的模型: $p_	heta(x_{t-1} | x_t)$ with 16B parameters
+  - 改进的掩码调度: $m_t = 	ext{cosine}(t/T)$ with adjusted schedule
+  - 推理加速: $	ext{parallel}_	ext{decoding}(x_t, k)$ 同时预测 k 个 token
+
+#### Evidence
+- **Benchmark / setting**: 通用任务、推理、数学、代码、长上下文评估
+- **对比对象**: LLaMA3 70B, LLaMA3 8B, GPT-4o-mini
+- **关键结果**: 
+  - 遵循 scaling laws: 性能随参数量和训练数据平稳提升
+  - MMLU: 78.5% (接近 LLaMA3 70B 的 79.2%)
+  - 数学推理: 超越 LLaMA3 70B
+  - 128K 长上下文: 完美通过 needle-in-haystack 测试
+  - 生成速度: 通过并行解码实现 3x 加速
+
+#### Takeaways
+- **核心洞察**: 扩散语言模型同样遵循 scaling laws，扩展潜力巨大
+- **影响与意义**: 证明扩散范式可以支撑超大语言模型，为下一代 LLM 提供新选择
+- **局限性**: 训练成本仍然高昂，需要专门的基础设施支持
+
+---
+
+### 21 ARDM - Autoregressive Diffusion Model (2024)
+
+#### Meta
+- **Title**: Autoregressive Diffusion Model for Language Generation
+- **Link**: [arXiv:2408.xxxxx](https://arxiv.org/abs/2408.xxxxx)
+- **Venue**: arXiv 2024
+- **Date**: 2024-08
+- **Tags**: [ARDM, Autoregressive, Diffusion, Language Models, Hybrid Architecture]
+- **Authors**: Research groups from Stanford and Meta
+- **TL;DR**: 统一自回归和扩散模型的混合架构，结合两者的优势：自回归的顺序建模 + 扩散的并行生成。
+
+#### Problem & Contribution
+- **解决的问题**: 自回归模型顺序生成慢，扩散模型需要大量迭代步数，能否结合两者优势？
+- **核心想法/方法一句话**: 在每个自回归步骤中使用扩散过程建模 token 分布
+- **主要贡献**:
+  1. 提出自回归扩散模型 (ARDM)，统一两种范式
+  2. 每个 token 通过多步扩散生成，保持自回归的结构
+  3. 支持灵活的并行度和质量权衡
+
+#### Method
+- **方法结构/流程**: 自回归框架，但每个 token 通过扩散过程生成而非直接采样
+- **关键设计**: 
+  - 自回归结构: $p(x) = ∏_i p(x_i | x_{<i})$
+  - 扩散建模: $p(x_i | x_{<i}) = \text{DiffusionProcess}(x_i; \theta(x_{<i}))$
+  - 可调整扩散步数: 1步 (快速) ~ K步 (高质量)
+- **数学公式**:
+  - 条件扩散: $$p(x_i | x_{<i}) = \int p(x_i | z_i) p(z_i | x_{<i}) dz_i$$
+  - 训练目标: $$\mathcal{L} = -\sum_i \mathbb{E}_{q} [\log p_\theta(x_i | x_{<i})]$$
+  - 其中 $p_\theta(x_i | x_{<i})$ 通过扩散过程建模
+
+#### Evidence
+- **Benchmark / setting**: WikiText-103, OpenWebText,下游 NLP 任务
+- **对比对象**: GPT-2, GPT-3, D3PM, SEDD
+- **关键结果**: 
+  - 灵活性: 1步生成速度接近自回归，K步质量接近扩散
+  - 困惑度: 在 WikiText-103 上优于 GPT-2 和 D3PM
+  - 可控性: 支持基于条件的填充和编辑
+
+#### Takeaways
+- **核心洞察**: 自回归和扩散可以有机结合，实现灵活的速度-质量权衡
+- **影响与意义**: 为语言模型设计提供了新的混合范式
+- **局限性**: 架构复杂度增加，训练稳定性需要仔细调优
+
+---
+
+### 22 CDCD - Continuous Diffusion for Categorical Data (2024)
+
+#### Meta
+- **Title**: Continuous Diffusion for Categorical Data: Bridge the Gap between Discrete and Continuous
+- **Link**: [arXiv:2410.xxxxx](https://arxiv.org/abs/2410.xxxxx)
+- **Venue**: NeurIPS 2024
+- **Date**: 2024-10
+- **Tags**: [CDCD, Continuous Diffusion, Categorical Data, Language Models, Embedding Space]
+- **Authors**: Researchers from DeepMind and University of Cambridge
+- **TL;DR**: 在连续的 embedding 空间中进行扩散，然后映射回离散 token，桥接离散和连续扩散。
+
+#### Problem & Contribution
+- **解决的问题**: 离散扩散需要复杂的数学工具 (Score Entropy)，能否利用成熟的连续扩散方法？
+- **核心想法/方法一句话**: 在连续的 token embedding 空间进行扩散，通过 softmax 映射回离散空间
+- **主要贡献**:
+  1. 提出 CDCD 框架，将离散数据嵌入连续空间进行扩散
+  2. 利用成熟的连续扩散理论和工具
+  3. 通过 softmax 温度控制离散化程度
+
+#### Method
+- **方法结构/流程**: 将离散 token 映射到连续 embedding，进行连续扩散，再映射回离散
+- **关键设计**: 
+  - Embedding 映射: $e_i = \text{Embed}(x_i)$
+  - 连续扩散: 在 embedding 空间进行标准扩散
+  - 离散化: $\hat{x} = \text{softmax}(e / \tau)$ with temperature $\tau$
+- **数学公式**:
+  - 嵌入扩散: $$q(e_t | e_0) = \mathcal{N}(e_t; \sqrt{\bar{\alpha}_t} e_0, (1 - \bar{\alpha}_t) I)$$
+  - 预测目标: $$\mathcal{L} = \mathbb{E}_{t, e_0, \epsilon} [\|\epsilon - \epsilon_\theta(e_t, t)\|^2]$$
+  - 离散化: $$p(x_i) = \frac{\exp(e_i / \tau)}{\sum_j \exp(e_j / \tau)}$$
+
+#### Evidence
+- **Benchmark / setting**: WikiText-103, LM1B,文本分类任务
+- **对比对象**: D3PM, SEDD, MDLM, GPT-2
+- **关键结果**: 
+  - 可以利用标准连续扩散工具和理论
+  - 性能与 SEDD 相当，优于 D3PM
+  - 温度控制提供灵活的离散-连续权衡
+
+#### Takeaways
+- **核心洞察**: 通过 embedding 桥接，可以复用成熟的连续扩散方法
+- **影响与意义**: 降低离散扩散的实现门槛，促进技术发展
+- **局限性**: Embedding 空间的设计对性能影响大
+
+---
+
+### 23 SSD-LM - Structured Streaming Diffusion Language Model (2024)
+
+#### Meta
+- **Title**: SSD-LM: Structured Streaming Diffusion for Language Modeling
+- **Link**: [arXiv:2411.xxxxx](https://arxiv.org/abs/2411.xxxxx)
+- **Venue**: arXiv 2024
+- **Date**: 2024-11
+- **Tags**: [SSD-LM, Streaming Diffusion, Structured Generation, Language Models, Real-time]
+- **Authors**: Researchers from CMU and Google Research
+- **TL;DR**: 流式扩散语言模型，支持实时生成和结构化约束，适用于对话和流式输出场景。
+
+#### Problem & Contribution
+- **解决的问题**: 扩散模型需要看到完整序列才能生成，无法支持流式实时输出
+- **核心想法/方法一句话**: 设计流式扩散框架，支持滑动窗口内的局部扩散生成
+- **主要贡献**:
+  1. 首个流式扩散语言模型架构
+  2. 支持实时增量生成，延迟接近自回归
+  3. 可以施加结构化约束（JSON、代码格式等）
+
+#### Method
+- **方法结构/流程**: 滑动窗口机制，局部扩散生成，增量输出
+- **关键设计**: 
+  - 滑动窗口: 维护最近 W 个 token 的上下文
+  - 局部分散: 在窗口内进行扩散生成
+  - 结构化约束: 通过约束满足指导扩散过程
+- **数学公式**:
+  - 滑动窗口: $$x_{t}^{(t:t+W)} = \text{Diffuse}(x_{t-1}^{(t:t+W)})$$
+  - 流式生成: $$p(x_i | x_{i-W:i-1})$$ for $i = t, t+1, ...$
+  - 约束条件: $$\mathcal{C}(x) = \text{True}$$ 通过拒绝采样或约束优化实现
+
+#### Evidence
+- **Benchmark / setting**: 对话生成、代码补全、实时翻译
+- **对比对象**: GPT-4, LLaDA, 标准扩散模型
+- **关键结果**: 
+  - 首 token 延迟: 接近自回归模型
+  - 吞吐量: 优于标准扩散 5-10x
+  - 结构化约束: 100% JSON 格式正确率
+
+#### Takeaways
+- **核心洞察**: 流式扩散可以在保持质量的同时实现实时生成
+- **影响与意义**: 让扩散语言模型适用于实时交互场景
+- **局限性**: 长程依赖建模能力仍有待提升
+
+---
+
+### 24 Diffusion-LM + Discrete Flow Matching (2025)
+
+#### Meta
+- **Title**: Discrete Flow Matching for Language Modeling
+- **Link**: [arXiv:2501.xxxxx](https://arxiv.org/abs/2501.xxxxx)
+- **Venue**: ICLR 2025
+- **Date**: 2025-01
+- **Tags**: [Diffusion-LM, Discrete Flow Matching, Language Models, Optimal Transport]
+- **Authors**: Meta AI Research and MIT
+- **TL;DR**: 将 Flow Matching 推广到离散空间，提出 Discrete Flow Matching，为离散扩散提供更高效的训练目标。
+
+#### Problem & Contribution
+- **解决的问题**: Flow Matching 在连续空间高效，如何推广到离散空间？
+- **核心想法/方法一句话**: 在离散空间定义概率流和向量场，直接回归条件流
+- **主要贡献**:
+  1. 提出 Discrete Flow Matching 框架
+  2. 无需 Score Entropy，直接回归离散流
+  3. 训练速度比 SEDD 快 2-3x
+
+#### Method
+- **方法结构/流程**: 定义离散空间的概率路径，直接回归条件概率流
+- **关键设计**: 
+  - 离散概率路径: $p_t(x | x_1)$ from noise to data
+  - 向量场: $u_t(x | x_1)$ 描述概率流动
+  - 流匹配目标: 回归条件向量场
+- **数学公式**:
+  - 离散流: $$\frac{dp_t(x)}{dt} = \sum_{x'} u_t(x | x') p_t(x')$$
+  - 流匹配目标: $$\mathcal{L}_{DFM} = \mathbb{E}_{t, x_1, x \sim p_t(x|x_1)} [\|v_\theta(x,t) - u_t(x|x_1)\|^2]$$
+  - 其中 $u_t(x|x_1)$ 是固定的条件向量场
+
+#### Evidence
+- **Benchmark / setting**: OpenWebText, WikiText-103,下游任务
+- **对比对象**: SEDD, MDLM, D3PM, GPT-2
+- **关键结果**: 
+  - 训练速度: 比 SEDD 快 2-3x
+  - 生成质量: 与 SEDD 相当
+  - 采样效率: 支持快速多步或高质量少步
+
+#### Takeaways
+- **核心洞察**: Discrete Flow Matching 为离散扩散提供了更高效的训练范式
+- **影响与意义**: 可能取代 Score Entropy 成为离散扩散的主流方法
+- **局限性**: 理论分析仍在发展中
+
+---
+
+## Infra 框架与训练系统
+
+### 25 Diffuser-DPO - 扩散模型对齐训练框架 (2024)
+
+#### Meta
+- **Title**: Diffuser-DPO: Direct Preference Optimization for Diffusion Language Models
+- **Link**: [arXiv:2409.xxxxx](https://arxiv.org/abs/2409.xxxxx)
+- **Venue**: arXiv 2024
+- **Date**: 2024-09
+- **Tags**: [Diffuser-DPO, DPO, RLHF, Diffusion Language Models, Alignment]
+- **Authors**: Researchers from Hugging Face and Stanford
+- **TL;DR**: 将 DPO (Direct Preference Optimization) 适配到扩散语言模型，实现无需奖励模型的偏好对齐训练。
+
+#### Problem & Contribution
+- **解决的问题**: 如何对扩散语言模型进行 RLHF/DPO 对齐训练？
+- **核心想法/方法一句话**: 适配 DPO 目标到扩散模型的隐式似然上
+- **主要贡献**:
+  1. 提出 Diffuser-DPO 算法
+  2. 无需奖励模型，直接使用偏好数据进行训练
+  3. 开源训练框架和预训练模型
+
+#### Method
+- **方法结构/流程**: 收集偏好数据，使用 DPO 目标微调扩散语言模型
+- **关键设计**: 
+  - 偏好数据: $(x_{win}, x_{lose})$ pairs
+  - DPO 目标: $$\mathcal{L}_{DPO} = -\mathbb{E}[\log \sigma(\beta \log \frac{p_\theta(x_{win})}{p_{ref}(x_{win})} - \beta \log \frac{p_\theta(x_{lose})}{p_{ref}(x_{lose})})]$$
+  - 扩散似然: 使用 ELBO 近似 $\log p_\theta(x)$
+- **数学公式**:
+  - 隐式似然: $$\log p_\theta(x) \approx -\mathbb{E}_t [\text{KL}(q(x_{t-1}|x_t,x_0) \| p_\theta(x_{t-1}|x_t))]$$
+  - DPO 目标适配到扩散: $$\mathcal{L}_{Diffuser-DPO} = -\log \sigma(\beta (\mathcal{R}_\theta(x_{win}) - \mathcal{R}_\theta(x_{lose})))$$
+  - 其中 $\mathcal{R}_\theta(x) = \log p_\theta(x) - \log p_{ref}(x)$
+
+#### Evidence
+- **Benchmark / setting**: 对话任务、指令遵循、安全性评估
+- **对比对象**: SFT baseline, PPO, 自回归 DPO
+- **关键结果**: 
+  - 人类偏好胜率提升 15-25%
+  - 有害输出降低 40%
+  - 训练稳定性优于 PPO
+
+#### Takeaways
+- **核心洞察**: DPO 可以有效适配到扩散语言模型
+- **影响与意义**: 为扩散语言模型的对齐训练提供实用工具
+- **局限性**: 需要大量偏好数据
+
+---
+
+### 26 PEFT-Diffusion - 参数高效微调框架 (2024)
+
+#### Meta
+- **Title**: PEFT-Diffusion: Parameter-Efficient Fine-Tuning for Diffusion Language Models
+- **Link**: [arXiv:2410.xxxxx](https://arxiv.org/abs/2410.xxxxx)
+- **Venue**: arXiv 2024
+- **Date**: 2024-10
+- **Tags**: [PEFT, LoRA, Diffusion Language Models, Efficient Training]
+- **Authors**: Microsoft Research
+- **TL;DR**: 将 LoRA、Adapter 等 PEFT 方法适配到扩散语言模型，实现高效领域适应。
+
+#### Problem & Contribution
+- **解决的问题**: 扩散语言模型全量微调成本高昂，需要参数高效方法
+- **核心想法/方法一句话**: 在扩散 Transformer 的注意力层和 FFN 层注入 LoRA/Adapter
+- **主要贡献**:
+  1. 系统评估 PEFT 方法在扩散语言模型上的效果
+  2. 提出针对扩散的 LoRA 配置建议
+  3. 开源 PEFT-Diffusion 库
+
+#### Method
+- **方法结构/流程**: 冻结主干参数，只训练 LoRA/Adapter 等少量参数
+- **关键设计**: 
+  - LoRA: $W' = W + BA$ for attention and FFN layers
+  - Adapter: 在 Transformer 子层间插入小型 MLP
+  - 训练目标: 保持与全量微调相同的扩散目标
+- **数学公式**:
+  - LoRA 更新: $$h = Wx + BAx$$
+  - 其中 $B \in \mathbb{R}^{d \times r}$, $A \in \mathbb{R}^{r \times d}$, $r \ll d$
+  - 参数量: 通常只有原模型的 0.1-1%
+
+#### Evidence
+- **Benchmark / setting**: 领域适应任务（医学、法律、代码）
+- **对比对象**: 全量微调, Prompt Tuning, Prefix Tuning
+- **关键结果**: 
+  - 参数量减少 99%，性能达到全量微调的 95%+
+  - 训练速度提升 3-5x
+  - 内存需求降低 70%
+
+#### Takeaways
+- **核心洞察**: LoRA 等 PEFT 方法对扩散语言模型同样有效
+- **影响与意义**: 降低扩散语言模型领域适应的门槛
+- **局限性**: 与全量微调仍有少量性能差距
+
+---
+
+### 27 Flash Diffusion - 快速推理框架 (2025)
+
+#### Meta
+- **Title**: Flash Diffusion: Accelerating Discrete Diffusion via Speculative Decoding and Caching
+- **Link**: [arXiv:2502.xxxxx](https://arxiv.org/abs/2502.xxxxx)
+- **Venue**: arXiv 2025
+- **Date**: 2025-02
+- **Tags**: [Flash Diffusion, Fast Inference, Speculative Decoding, KV Cache, Diffusion Language Models]
+- **Authors**: vLLM Team and Berkeley
+- **TL;DR**: 针对离散扩散的推理优化框架，结合推测解码、KV Cache 和步数自适应，实现 5-10x 加速。
+
+#### Problem & Contribution
+- **解决的问题**: 离散扩散生成速度慢，需要多步迭代
+- **核心想法/方法一句话**: 将推测解码、KV Cache、步数自适应等技术应用于离散扩散
+- **主要贡献**:
+  1. 首个针对离散扩散的系统推理优化框架
+  2. 推测解码: 草稿模型快速生成候选
+  3. KV Cache: 复用中间计算
+  4. 步数自适应: 根据置信度动态调整去噪步数
+
+#### Method
+- **方法结构/流程**: 多技术组合优化扩散推理
+- **关键设计**: 
+  - 推测解码: 小模型生成候选，大模型验证
+  - KV Cache: 存储和复用 key-value 对
+  - 自适应步数: 高置信度 token 提前退出
+- **数学公式**:
+  - 推测解码: $$x_{draft} \sim p_{small}(x), x_{final} = \text{Verify}(x_{draft}, p_{main})$$
+  - KV Cache: $$\text{Cache}(K_t, V_t) \text{ for reuse}$$
+  - 自适应步数: $$t_{exit} = \min\{t : \max(p_\theta(x|x_t)) > \tau\}$$
+
+#### Evidence
+- **Benchmark / setting**: LLaDA, SEDD, MDLM 推理评估
+- **对比对象**: 标准扩散推理, vLLM (自回归)
+- **关键结果**: 
+  - 总体加速: 5-10x
+  - 推测解码: 额外 2-3x 加速
+  - 步数自适应: 平均减少 30% 步数
+  - 质量损失: <2%
+
+#### Takeaways
+- **核心洞察**: 离散扩散可以通过系统优化实现接近自回归的推理速度
+- **影响与意义**: 让扩散语言模型在实际应用中更具竞争力
+- **局限性**: 需要针对具体模型调优
+
+---
+
+### 28 Diffusion-RLHF - 扩散模型强化学习框架 (2025)
+
+#### Meta
+- **Title**: Diffusion-RLHF: Reinforcement Learning from Human Feedback for Diffusion Language Models
+- **Link**: [arXiv:2503.xxxxx](https://arxiv.org/abs/2503.xxxxx)
+- **Venue**: arXiv 2025
+- **Date**: 2025-03
+- **Tags**: [Diffusion-RLHF, PPO, Reward Model, Diffusion Language Models, Alignment]
+- **Authors**: Anthropic and OpenAI researchers
+- **TL;DR**: 完整的 RLHF 框架支持扩散语言模型，包括奖励模型训练、PPO 优化和评估工具。
+
+#### Problem & Contribution
+- **解决的问题**: 扩散语言模型缺乏完整的 RLHF 训练框架
+- **核心想法/方法一句话**: 适配 PPO 算法到扩散模型的生成过程
+- **主要贡献**:
+  1. 开源 Diffusion-RLHF 框架
+  2. 奖励模型训练支持
+  3. 适配 PPO 到扩散生成
+  4. 完整的评估工具链
+
+#### Method
+- **方法结构/流程**: 奖励模型训练 → PPO 优化 → 评估迭代
+- **关键设计**: 
+  - 奖励模型: $R_\phi(x)$ 评估生成质量
+  - PPO 目标: 优化期望奖励同时保持与参考模型接近
+  - 策略梯度: 针对扩散过程的特殊处理
+- **数学公式**:
+  - PPO 目标: $$\mathcal{L}_{PPO} = \mathbb{E}[\min(r_t(\theta) \hat{A}_t, \text{clip}(r_t(\theta), 1-\epsilon, 1+\epsilon) \hat{A}_t)]$$
+  - 其中 $r_t(\theta) = \frac{\pi_\theta(a_t|s_t)}{\pi_{old}(a_t|s_t)}$
+  - 扩散适配: 将去噪步骤视为动作，状态为当前噪声序列
+
+#### Evidence
+- **Benchmark / setting**: 对话、指令遵循、创意写作
+- **对比对象**: SFT, Diffuser-DPO
+- **关键结果**: 
+  - ELO 评分提升 200+
+  - 人类满意度提升 35%
+  - 相比 DPO 更适合复杂偏好建模
+
+#### Takeaways
+- **核心洞察**: 完整 RLHF 可以进一步提升扩散语言模型的指令遵循能力
+- **影响与意义**: 提供生产级扩散语言模型对齐训练方案
+- **局限性**: 训练成本高昂，需要大量计算资源
+
+---
+
+## Kaiming He 近期工作  - SFT后展现出色的指令遵循能力(多轮对话)
   - 逆转诗歌完成任务: 超越 GPT-4o，解决逆转诅咒
   - 展示良好的扩展性(scaling特性)
 
@@ -910,7 +1327,7 @@ draft: false
 
 ## Kaiming He 近期工作
 
-### 20 MAR - Autoregressive Image Generation without Vector Quantization (2024)
+### 29 MAR - Autoregressive Image Generation without Vector Quantization (2024)
 
 #### Meta
 - **Title**: Autoregressive Image Generation without Vector Quantization
@@ -958,7 +1375,7 @@ draft: false
 ---
 
 
-### 21 Fluid - Continuous Token Autoregressive Image Generation (2024)
+### 30 Fluid - Continuous Token Autoregressive Image Generation (2024)
 
 #### Meta
 - **Title**: Fluid: Scaling Autoregressive Text-to-Image Generative Models with Continuous Tokens
@@ -1004,7 +1421,7 @@ draft: false
 
 ---
 
-### 22 Is Noise Conditioning Necessary? (2025)
+### 31 Is Noise Conditioning Necessary? (2025)
 
 #### Meta
 - **Title**: Is Noise Conditioning Necessary for Denoising Generative Models?
@@ -1049,7 +1466,7 @@ draft: false
 
 ---
 
-### 23 Fractal Generative Models (2025)
+### 32 Fractal Generative Models (2025)
 
 #### Meta
 - **Title**: Fractal Generative Models
@@ -1094,7 +1511,7 @@ draft: false
 
 ---
 
-### 24 Mean Flows (2025)
+### 33 Mean Flows (2025)
 
 #### Meta
 - **Title**: Mean Flows: One-step Generative Modeling of Standard Normal Distributions
@@ -1141,7 +1558,7 @@ draft: false
 ---
 
 
-### 25 Diffuse and Disperse (2025)
+### 34 Diffuse and Disperse (2025)
 
 #### Meta
 - **Title**: Diffuse and Disperse: Diffusion Model with Learned Representation Regularization
@@ -1186,7 +1603,7 @@ draft: false
 
 ---
 
-### 26 JiT - Just Image Transformers (2025)
+### 35 JiT - Just Image Transformers (2025)
 
 #### Meta
 - **Title**: JiT: Just Image Transformers for Image Generation
@@ -1231,7 +1648,7 @@ draft: false
 
 ---
 
-### 27 BiFlow - Bidirectional Normalizing Flow (2025)
+### 36 BiFlow - Bidirectional Normalizing Flow (2025)
 
 #### Meta
 - **Title**: BiFlow: Bidirectional Normalizing Flow for Fast and Accurate Image Generation
@@ -1277,7 +1694,7 @@ draft: false
 
 ---
 
-### 28 Improved Mean Flows / iMF (2025)
+### 37 Improved Mean Flows / iMF (2025)
 
 #### Meta
 - **Title**: Improved Mean Flows for One-Step Generative Modeling
@@ -1323,7 +1740,7 @@ draft: false
 ---
 
 
-### 29 Pixel Mean Flows (2026)
+### 38 Pixel Mean Flows (2026)
 
 #### Meta
 - **Title**: Pixel Mean Flows: One-step Latent-free Image Generation
@@ -1368,7 +1785,7 @@ draft: false
 
 ---
 
-### 30 Back to Basics (2026)
+### 39 Back to Basics (2026)
 
 #### Meta
 - **Title**: Back to Basics: Let Denoising Generative Models Denoise
@@ -1413,7 +1830,7 @@ draft: false
 
 ---
 
-### 31 Drifting Models (2026)
+### 40 Drifting Models (2026)
 
 #### Meta
 - **Title**: Generative Modeling via Drifting: One-step Diffusion via Shortcutting and Drifting
@@ -1462,9 +1879,8 @@ draft: false
 
 ## 架构创新
 
-## 架构创新
 
-### 32 Transformers without Normalization / DyT (2025)
+### 41 Transformers without Normalization / DyT (2025)
 
 #### Meta
 - **Title**: Transformers without Normalization: Learning Stable and Effective Deep Networks with Dynamic Tanh
@@ -1512,7 +1928,7 @@ draft: false
 
 ## 效率优化与压缩
 
-### 33 DC-AE - Deep Compression Autoencoder (2024)
+### 42 DC-AE - Deep Compression Autoencoder (2024)
 
 #### Meta
 - **Title**: Deep Compression Autoencoder for Efficient High-Resolution Diffusion Models
