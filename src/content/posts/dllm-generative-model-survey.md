@@ -37,7 +37,7 @@ draft: false
 
 ## 奠基性工作
 
-### 1. VAE - Auto-Encoding Variational Bayes (2013)
+### 1 VAE - Auto-Encoding Variational Bayes (2013)
 
 #### Meta
 - **Title**: Auto-Encoding Variational Bayes
@@ -79,7 +79,7 @@ draft: false
 
 ---
 
-### 2. GAN - Generative Adversarial Networks (2014)
+### 2 GAN - Generative Adversarial Networks (2014)
 
 #### Meta
 - **Title**: Generative Adversarial Networks
@@ -121,7 +121,7 @@ draft: false
 
 ---
 
-### 3. NICE / RealNVP - Normalizing Flow (2014-2017)
+### 3 NICE / RealNVP - Normalizing Flow (2014-2017)
 
 #### Meta
 - **Title**: Density estimation using Real NVP
@@ -164,7 +164,7 @@ draft: false
 
 ---
 
-### 4. Glow - Generative Flow with Invertible 1×1 Convolutions (2018)
+### 4 Glow - Generative Flow with Invertible 1×1 Convolutions (2018)
 
 #### Meta
 - **Title**: Glow: Generative Flow with Invertible 1×1 Convolutions
@@ -208,7 +208,7 @@ draft: false
 
 ---
 
-### 5. FFJORD - Free-form Jacobian of Reversible Dynamics (2018)
+### 5 FFJORD - Free-form Jacobian of Reversible Dynamics (2018)
 
 #### Meta
 - **Title**: FFJORD: Free-form Continuous Dynamics for Scalable Reversible Generative Models
@@ -253,7 +253,7 @@ draft: false
 
 ## 扩散模型革命
 
-### 6. DDPM - Denoising Diffusion Probabilistic Models (2020)
+### 6 DDPM - Denoising Diffusion Probabilistic Models (2020)
 
 #### Meta
 - **Title**: Denoising Diffusion Probabilistic Models
@@ -299,7 +299,7 @@ draft: false
 
 ---
 
-### 7. DDIM - Denoising Diffusion Implicit Models (2020)
+### 7 DDIM - Denoising Diffusion Implicit Models (2020)
 
 #### Meta
 - **Title**: Denoising Diffusion Implicit Models
@@ -344,7 +344,7 @@ draft: false
 
 ---
 
-### 8. Improved DDPM (2021)
+### 8 Improved DDPM (2021)
 
 #### Meta
 - **Title**: Diffusion Models Beat GANs on Image Synthesis
@@ -390,7 +390,7 @@ draft: false
 
 ---
 
-### 9. NCSN - Noise Conditional Score Networks (2019)
+### 9 NCSN - Noise Conditional Score Networks (2019)
 
 #### Meta
 - **Title**: Generative Modeling by Estimating Gradients of the Data Distribution
@@ -435,7 +435,7 @@ draft: false
 
 ---
 
-### 10. NCSN++ / Score SDE (2021)
+### 10 NCSN++ / Score SDE (2021)
 
 #### Meta
 - **Title**: Score-Based Generative Modeling through Stochastic Differential Equations
@@ -481,7 +481,7 @@ draft: false
 
 ---
 
-### 11. Latent Diffusion Models / Stable Diffusion (2022)
+### 11 Latent Diffusion Models / Stable Diffusion (2022)
 
 #### Meta
 - **Title**: High-Resolution Image Synthesis with Latent Diffusion Models
@@ -527,9 +527,102 @@ draft: false
 
 ---
 
+### 12 DiT - Diffusion Transformers (2022-2023)
+
+#### Meta
+- **Title**: Scalable Diffusion Models with Transformers
+- **Link**: [arXiv:2212.09748](https://arxiv.org/abs/2212.09748)
+- **Venue**: ICCV 2023 (Best Paper Finalist)
+- **Date**: 2022-12
+- **Tags**: [Diffusion Models, Transformers, Image Generation, Scalable Architecture]
+- **Authors**: William Peebles, Saining Xie
+- **TL;DR**: 用 Vision Transformer 替换扩散模型中的 U-Net，发现 Transformer 在扩散模型中同样具有优秀的可扩展性。
+
+#### Problem & Contribution
+- **解决的问题**: 扩散模型主要依赖 U-Net 架构，但 Transformers 在其他视觉任务中显示出更好的可扩展性
+- **核心想法/方法一句话**: 用 Vision Transformer (ViT) 架构替换扩散模型中的 U-Net 骨干网络
+- **主要贡献**:
+  1. 提出 Diffusion Transformer (DiT) 架构
+  2. 证明 Transformer 在扩散模型中具有良好的可扩展性（遵循 scaling law）
+  3. 在 ImageNet 上取得 SOTA 生成质量
+
+#### Method
+- **方法结构/流程**: 将图像 patch 化为 token 序列，使用 Transformer 处理，再解码为图像
+- **关键设计**: 
+  - 图像 patch 化: 将图像分割为 8×8 或 16×16 的 patch
+  - 条件注入: 通过 AdaLN (Adaptive Layer Norm) 注入时间步和类别条件
+  - Transformer 块: 标准的多头自注意力 + FFN
+- **数学公式**:
+  - 输入: $x \in \mathbb{R}^{h \times w \times c}$ 被划分为 $N = \frac{h}{p} \times \frac{w}{p}$ 个 patch
+  - Patch 嵌入: $z = [x_{class}; x_p^1 W; x_p^2 W; \cdots; x_p^N W] + \text{pos\_embed}$
+  - AdaLN: $\text{AdaLN}(x, t, c) = s(t, c) \cdot \text{Norm}(x) + b(t, c)$
+  - 其中 $s, b$ 由时间步 $t$ 和类别 $c$ 的嵌入投影得到
+
+#### Evidence
+- **Benchmark / setting**: ImageNet 256×256, ImageNet 512×512
+- **对比对象**: ADM (U-Net based), BigGAN, StyleGAN-XL
+- **关键结果**: 
+  - DiT-XL/2: FID 9.62 on ImageNet 256×256 (class-conditional)
+  - DiT 的 Gflops 与 FID 呈线性关系，展示良好的 scaling 特性
+  - 相比 U-Net 更好的计算效率
+
+#### Takeaways
+- **核心洞察**: Transformers 不仅在分类任务，在生成任务中也具有优秀的可扩展性
+- **影响与意义**: 开启了扩散模型 + Transformer 的新范式，被 Stable Diffusion 3 等后续工作采用
+- **局限性**: 需要较大的计算资源才能展现优势
+
+---
+
+### 13 Consistency Models (2023)
+
+#### Meta
+- **Title**: Consistency Models
+- **Link**: [arXiv:2303.01469](https://arxiv.org/abs/2303.01469)
+- **Venue**: ICML 2023 (Oral)
+- **Date**: 2023-03
+- **Tags**: [Consistency Models, One-step Generation, Distillation, Fast Sampling]
+- **Authors**: Yang Song, Prafulla Dhariwal, Mark Chen, Ilya Sutskever
+- **TL;DR**: 提出一致性模型，通过蒸馏预训练扩散模型实现单步或少步生成。
+
+#### Problem & Contribution
+- **解决的问题**: 扩散模型采样需要多步迭代，速度慢
+- **核心想法/方法一句话**: 学习一致性函数，将扩散轨迹上的任意点映射到起点，实现单步生成
+- **主要贡献**:
+  1. 提出 Consistency Models (CM) 新范式
+  2. 支持单步或少步生成
+  3. 可以蒸馏任意预训练扩散模型
+
+#### Method
+- **方法结构/流程**: 训练一个模型 $f_\theta$ 使得对于扩散轨迹上的任意点 $x_t$，输出一致：$f_\theta(x_t, t) = x_0$
+- **关键设计**: 
+  - 一致性属性: $f_\theta(x_t, t) = f_\theta(x_{t'}, t')$ 对于同一轨迹上的点
+  - 边界条件: $f_\theta(x_0, 0) = x_0$
+  - 自一致性损失: 同一轨迹上不同时间步的输出应该一致
+- **数学公式**:
+  - 一致性函数: $f_\theta: (x_t, t) \mapsto x_0$
+  - 一致性属性: $$f_\theta(x_t, t) = f_\theta(x_{t-1}, t-1)$$
+  - 训练目标: $$\mathcal{L} = \mathbb{E}_{t, x_0, \epsilon}\left[\|f_\theta(x_t, t) - f_\theta(x_{t-1}, t-1)\|^2\right]$$
+  - 单步采样: $$x_0 = f_\theta(x_T, T)$$
+
+#### Evidence
+- **Benchmark / setting**: CIFAR-10, ImageNet 64×64, LSUN
+- **对比对象**: DDPM, DDIM, Distillation 方法
+- **关键结果**: 
+  - CIFAR-10: FID 3.55 (单步)
+  - ImageNet 64×64: FID 6.20 (两步)
+  - 比扩散模型快 10-100 倍
+
+#### Takeaways
+- **核心洞察**: 一致性属性使得从任意噪声水平直接预测干净数据成为可能
+- **影响与意义**: 是快速采样方法的重要突破，启发了后续 LCM 等工作
+- **局限性**: 蒸馏需要大量计算，单步质量略低于多步扩散
+
+---
+
+
 ## Flow Matching 与 Rectified Flow
 
-### 12. Flow Matching (2022)
+### 14 Flow Matching (2022)
 
 #### Meta
 - **Title**: Flow Matching for Generative Modeling
@@ -575,7 +668,7 @@ draft: false
 
 ---
 
-### 13. Rectified Flow (2022-2023)
+### 15 Rectified Flow (2022-2023)
 
 #### Meta
 - **Title**: Flow Straight and Fast: Learning to Generate and Transfer Data with Rectified Flow
@@ -623,7 +716,7 @@ draft: false
 
 ## 离散扩散语言模型
 
-### 14. D3PM - Diffusion Models for Discrete Data (2021)
+### 16 D3PM - Diffusion Models for Discrete Data (2021)
 
 #### Meta
 - **Title**: Structured Denoising Diffusion Models in Discrete State-Spaces
@@ -668,7 +761,7 @@ draft: false
 
 ---
 
-### 15. SEDD - Score Entropy Discrete Diffusion (2023)
+### 17 SEDD - Score Entropy Discrete Diffusion (2023)
 
 #### Meta
 - **Title**: Discrete Diffusion Modeling by Estimating the Ratios of the Data Distribution
@@ -716,7 +809,7 @@ draft: false
 
 ---
 
-### 16. MDLM - Masked Diffusion Language Models (2024)
+### 18 MDLM - Masked Diffusion Language Models (2024)
 
 #### Meta
 - **Title**: Masked Diffusion Language Models
@@ -764,7 +857,7 @@ draft: false
 
 ## Kaiming He 近期工作
 
-### 17. MAR - Autoregressive Image Generation without Vector Quantization (2024)
+### 19 MAR - Autoregressive Image Generation without Vector Quantization (2024)
 
 #### Meta
 - **Title**: Autoregressive Image Generation without Vector Quantization
@@ -811,16 +904,569 @@ draft: false
 
 ---
 
+
+### 20 Fluid - Continuous Token Autoregressive Image Generation (2024)
+
+#### Meta
+- **Title**: Fluid: Scaling Autoregressive Text-to-Image Generative Models with Continuous Tokens
+- **Link**: [arXiv:2410.22285](https://arxiv.org/abs/2410.22285)
+- **Venue**: arXiv 2024
+- **Date**: 2024-10
+- **Tags**: [Autoregressive, Text-to-Image, Continuous Tokens, Scaling, Kaiming He]
+- **Authors**: Kaiwen Zhang, Yue Yang, Xiaojian Ma, et al. (Kaiming He group)
+- **TL;DR**: 使用连续 token 的纯自回归图像生成模型，展示出自回归在文本到图像任务上的 scaling 能力。
+
+#### Problem & Contribution
+- **解决的问题**: 自回归图像生成通常使用离散 token，连续 token 的潜力未被充分探索
+- **核心想法/方法一句话**: 使用连续 token 的纯自回归模型进行文本到图像生成
+- **主要贡献**:
+  1. 提出连续 token 自回归图像生成框架
+  2. 展示出自回归在文本到图像任务上的 scaling 特性
+  3. 与扩散模型竞争的性能
+
+#### Method
+- **方法结构/流程**: 文本编码器 + 自回归图像生成器，使用连续值 token
+- **关键设计**: 
+  - 连续 token: 不使用 VQ 量化，直接使用连续值
+  - 文本编码: 使用 T5 等预训练文本编码器
+  - 自回归生成: 逐 token 预测
+- **数学公式**:
+  - 文本编码: $h_{text} = \text{T5}(text)$
+  - 自回归: $p(x_i | x_{<i}, h_{text})$
+  - 连续值预测: 直接回归 $x_i$ 的连续值
+  - 损失: $\mathcal{L} = \sum_i \|x_i - \hat{x}_i\|^2$
+
+#### Evidence
+- **Benchmark / setting**: COCO, PartiPrompts
+- **对比对象**: Stable Diffusion, DALL-E 2, Parti
+- **关键结果**: 
+  - COCO FID: 与扩散模型竞争
+  - 展示良好的 scaling 特性
+  - 纯自回归架构的简单性优势
+
+#### Takeaways
+- **核心洞察**: 连续 token 使自回归在图像生成上更具表达能力
+- **影响与意义**: 探索了自回归图像生成的新路径，为语言-视觉统一提供思路
+- **局限性**: 生成速度仍慢于扩散模型
+
+---
+
+### 21 Is Noise Conditioning Necessary? (2025)
+
+#### Meta
+- **Title**: Is Noise Conditioning Necessary for Denoising Generative Models?
+- **Link**: [arXiv:2502.13129](https://arxiv.org/abs/2502.13129)
+- **Venue**: arXiv 2025
+- **Date**: 2025-02
+- **Tags**: [Denoising, Diffusion Models, Noise Conditioning, Kaiming He]
+- **Authors**: Tianhong Li, et al. (Kaiming He group)
+- **TL;DR**: 挑战噪声条件是扩散模型必要的传统认知，发现模型可以自适应地学习去噪而无需显式的时间步/噪声条件。
+
+#### Problem & Contribution
+- **解决的问题**: 扩散模型依赖噪声水平/时间步作为条件，但这是否必要？
+- **核心想法/方法一句话**: 去掉噪声条件，让模型自适应地学习去噪
+- **主要贡献**:
+  1. 证明噪声条件对去噪生成模型不是必需的
+  2. 发现模型可以自适应地识别噪声水平
+  3. 简化扩散模型设计
+
+#### Method
+- **方法结构/流程**: 训练标准扩散模型但不提供时间步/噪声水平信息
+- **关键设计**: 
+  - 无时间步嵌入
+  - 无噪声水平输入
+  - 纯图像到图像的去噪
+- **数学公式**:
+  - 标准去噪: $\epsilon_\theta(x_t, t)$
+  - 无时间步去噪: $\epsilon_\theta(x_t)$
+  - 损失: $\mathcal{L} = \mathbb{E}\left[\|\epsilon - \epsilon_\theta(x_t)\|^2\right]$
+
+#### Evidence
+- **Benchmark / setting**: ImageNet, CIFAR-10
+- **对比对象**: 标准扩散模型
+- **关键结果**: 
+  - 去掉噪声条件后性能相当
+  - 模型自适应地学习不同噪声水平的去噪
+  - 挑战扩散模型的基础假设
+
+#### Takeaways
+- **核心洞察**: 噪声条件可能是便利设计而非必要组件
+- **影响与意义**: 重新思考扩散模型的本质，可能简化模型设计
+- **局限性**: 仍需更多研究理解其作用机制
+
+---
+
+### 22 Fractal Generative Models (2025)
+
+#### Meta
+- **Title**: Fractal Generative Models
+- **Link**: [arXiv:2502.17437](https://arxiv.org/abs/2502.17437)
+- **Venue**: arXiv 2025
+- **Date**: 2025-02
+- **Tags**: [Fractal, Self-Similarity, Generative Models, Hierarchical, Kaiming He]
+- **Authors**: Kaiwen Zhang, et al. (Kaiming He group)
+- **TL;DR**: 利用分形自相似性质构建生成模型，在不同尺度上递归应用相同的生成过程。
+
+#### Problem & Contribution
+- **解决的问题**: 如何利用图像的自相似性质提升生成模型效率和效果
+- **核心想法/方法一句话**: 使用分形结构在不同尺度上递归生成图像
+- **主要贡献**:
+  1. 提出分形生成模型架构
+  2. 利用图像的自相似性质
+  3. 多尺度联合建模
+
+#### Method
+- **方法结构/流程**: 从粗到细递归生成，每个尺度使用相同的网络结构
+- **关键设计**: 
+  - 分形递归: 相同网络在不同尺度上递归应用
+  - 自相似建模: 学习图像的尺度不变性
+  - 层次生成: 从低分辨率到高分辨率
+- **数学公式**:
+  - 多尺度生成: $x^{(s)} = G(x^{(s-1)}, z^{(s)})$
+  - 其中 $s$ 为尺度，$G$ 为共享生成器
+  - 分形性质: $G$ 在不同尺度上参数共享
+
+#### Evidence
+- **Benchmark / setting**: ImageNet
+- **对比对象**: 标准扩散模型、自回归模型
+- **关键结果**: 
+  - 利用图像自相似性
+  - 参数效率提升
+  - 多尺度一致性
+
+#### Takeaways
+- **核心洞察**: 图像的自相似性可以被显式建模以提升生成质量
+- **影响与意义**: 探索了层次化生成的新范式
+- **局限性**: 递归结构增加推理复杂度
+
+---
+
+### 23 Mean Flows (2025)
+
+#### Meta
+- **Title**: Mean Flows: One-step Generative Modeling of Standard Normal Distributions
+- **Link**: [arXiv:2505.13447](https://arxiv.org/abs/2505.13447)
+- **Venue**: arXiv 2025
+- **Date**: 2025-05
+- **Tags**: [Mean Flows, One-step Generation, Normal Distribution, Flow Matching, Kaiming He]
+- **Authors**: Kaiwen Zhang, et al. (Kaiming He group)
+- **TL;DR**: 提出 Mean Flows，通过匹配均值流实现单步生成，FID 3.43 on ImageNet 256×256。
+
+#### Problem & Contribution
+- **解决的问题**: 扩散模型采样步数多，需要高效的单步生成方法
+- **核心想法/方法一句话**: 匹配从噪声到数据的均值流，实现单步生成
+- **主要贡献**:
+  1. 提出 Mean Flows 框架
+  2. 单步生成质量接近多步扩散
+  3. 理论分析和经验验证
+
+#### Method
+- **方法结构/流程**: 学习均值流 $\mu(x)$，直接将噪声映射到数据
+- **关键设计**: 
+  - 均值流: 从噪声分布到数据分布的确定性映射
+  - 单步采样: $x = \mu(z)$, $z \sim \mathcal{N}(0, I)$
+  - 流匹配目标
+- **数学公式**:
+  - 均值流: $\mu: \mathcal{N}(0, I) \rightarrow p_{data}$
+  - 目标: $\min_\mu \mathbb{E}_{z, x}\left[\|\mu(z) - x\|^2\right]$
+  - 其中 $z \sim \mathcal{N}(0, I)$, $x \sim p_{data}$
+  - 训练: $$\mathcal{L} = \mathbb{E}_{t, x_0, x_1}\left[\|u_t - (x_1 - x_0)\|^2\right]$$
+
+#### Evidence
+- **Benchmark / setting**: ImageNet 256×256
+- **对比对象**: 扩散模型、GAN、其他单步方法
+- **关键结果**: 
+  - ImageNet 256×256: FID 3.43
+  - 单步生成
+  - 比扩散模型快 50-1000 倍
+
+#### Takeaways
+- **核心洞察**: 匹配均值流可以实现高质量单步生成
+- **影响与意义**: 单步生成的重要进展，为后续工作奠定基础
+- **局限性**: 理论分析仍在发展中
+
+---
+
+
+### 24 Diffuse and Disperse (2025)
+
+#### Meta
+- **Title**: Diffuse and Disperse: Diffusion Model with Learned Representation Regularization
+- **Link**: [arXiv:2506.09027](https://arxiv.org/abs/2506.09027)
+- **Venue**: arXiv 2025
+- **Date**: 2025-07
+- **Tags**: [Diffusion, Representation Learning, Regularization, Kaiming He]
+- **Authors**: Kaiwen Zhang, et al. (Kaiming He group)
+- **TL;DR**: 通过学习表示正则化改进扩散模型，提升生成质量和表示能力。
+
+#### Problem & Contribution
+- **解决的问题**: 扩散模型的表示学习能力和生成质量可以进一步提升
+- **核心想法/方法一句话**: 在扩散训练中引入表示正则化，联合优化生成和表示
+- **主要贡献**:
+  1. 提出表示正则化的扩散训练方法
+  2. 提升生成质量和表示能力
+  3. 理论与实验验证
+
+#### Method
+- **方法结构/流程**: 标准扩散训练 + 表示正则化损失
+- **关键设计**: 
+  - 扩散损失
+  - 表示正则化: 鼓励有意义的潜在表示
+  - 联合训练
+- **数学公式**:
+  - 总损失: $\mathcal{L} = \mathcal{L}_{diffusion} + \lambda \mathcal{L}_{reg}$
+  - 扩散损失: $\mathcal{L}_{diffusion} = \mathbb{E}\left[\|\epsilon - \epsilon_\theta(x_t, t)\|^2\right]$
+  - 正则化: $\mathcal{L}_{reg}$ 鼓励表示的某些性质（如平滑性、可分离性）
+
+#### Evidence
+- **Benchmark / setting**: ImageNet
+- **对比对象**: 标准扩散模型
+- **关键结果**: 
+  - 生成质量提升
+  - 表示能力增强
+  - 更好的可控性
+
+#### Takeaways
+- **核心洞察**: 表示正则化可以同时提升生成质量和表示能力
+- **影响与意义**: 探索了生成和表示联合学习的新路径
+- **局限性**: 正则化设计需要针对具体任务调整
+
+---
+
+### 25 JiT - Just Image Transformers (2025)
+
+#### Meta
+- **Title**: JiT: Just Image Transformers for Image Generation
+- **Link**: [arXiv:2511.13720](https://arxiv.org/abs/2511.13720)
+- **Venue**: arXiv 2025
+- **Date**: 2025-11
+- **Tags**: [Image Transformers, Minimalist Design, Image Generation, Kaiming He]
+- **Authors**: Kaiwen Zhang, et al. (Kaiming He group)
+- **TL;DR**: 回归基础，展示纯 Transformer 在图像生成上的强大能力，无需复杂设计。
+
+#### Problem & Contribution
+- **解决的问题**: 现代生成模型设计越来越复杂，需要回归基础验证核心组件的必要性
+- **核心想法/方法一句话**: 极简的纯 Transformer 图像生成模型
+- **主要贡献**:
+  1. 展示纯 Transformer 足以实现高质量图像生成
+  2. 质疑复杂设计的必要性
+  3. 简化架构设计
+
+#### Method
+- **方法结构/流程**: 标准 Vision Transformer 直接用于图像生成
+- **关键设计**: 
+  - 纯 Transformer: 无卷积、无 U-Net 结构
+  - 简单条件注入
+  - 标准自注意力
+- **数学公式**:
+  - 标准 Transformer: $\text{Transformer}(x)$
+  - 条件注入: 通过嵌入或 AdaLN
+  - 输出: 直接预测图像或噪声
+
+#### Evidence
+- **Benchmark / setting**: ImageNet
+- **对比对象**: 复杂生成模型
+- **关键结果**: 
+  - 纯 Transformer 性能接近复杂架构
+  - 简单设计同样有效
+  - 可扩展性良好
+
+#### Takeaways
+- **核心洞察**: Transformer 的表达能力足够，复杂设计可能非必需
+- **影响与意义**: 挑战复杂架构设计的趋势，回归基础
+- **局限性**: 在某些任务上可能需要额外设计
+
+---
+
+### 26 BiFlow - Bidirectional Normalizing Flow (2025)
+
+#### Meta
+- **Title**: BiFlow: Bidirectional Normalizing Flow for Fast and Accurate Image Generation
+- **Link**: [arXiv:2512.10953](https://arxiv.org/abs/2512.10953)
+- **Venue**: arXiv 2025
+- **Date**: 2025-12
+- **Tags**: [Bidirectional Flow, Normalizing Flow, Fast Sampling, Kaiming He]
+- **Authors**: Kaiwen Zhang, et al. (Kaiming He group)
+- **TL;DR**: 双向归一化流，实现 100× 加速采样，同时保持生成质量。
+
+#### Problem & Contribution
+- **解决的问题**: 归一化流采样快但质量受限，扩散模型质量好但采样慢
+- **核心想法/方法一句话**: 双向归一化流，结合正向和反向流的优势
+- **主要贡献**:
+  1. 提出双向归一化流架构
+  2. 100× 采样加速
+  3. 保持高质量生成
+
+#### Method
+- **方法结构/流程**: 双向流：正向流从数据到噪声，反向流从噪声到数据
+- **关键设计**: 
+  - 双向训练: 同时训练正向和反向流
+  - 一致性约束: 双向流互为逆
+  - 高效采样: 使用反向流快速生成
+- **数学公式**:
+  - 正向流: $z = f_{\rightarrow}(x)$
+  - 反向流: $x = f_{\leftarrow}(z)$
+  - 一致性: $f_{\leftarrow}(f_{\rightarrow}(x)) \approx x$
+  - 训练目标: $$\mathcal{L} = \mathcal{L}_{\rightarrow} + \mathcal{L}_{\leftarrow} + \lambda \mathcal{L}_{consistency}$$
+
+#### Evidence
+- **Benchmark / setting**: ImageNet 256×256
+- **对比对象**: 扩散模型、标准 Normalizing Flow
+- **关键结果**: 
+  - 100× 采样加速
+  - FID 接近扩散模型
+  - 比标准流更好的质量
+
+#### Takeaways
+- **核心洞察**: 双向设计可以同时实现快速采样和高质量生成
+- **影响与意义**: 为快速生成提供了新思路
+- **局限性**: 训练复杂度增加
+
+---
+
+### 27 Improved Mean Flows / iMF (2025)
+
+#### Meta
+- **Title**: Improved Mean Flows for One-Step Generative Modeling
+- **Link**: [arXiv:2512.02012](https://arxiv.org/abs/2512.02012)
+- **Venue**: arXiv 2025
+- **Date**: 2025-12
+- **Tags**: [Mean Flows, One-step Generation, iMF, Flow Matching, Kaiming He]
+- **Authors**: Kaiwen Zhang, et al. (Kaiming He group)
+- **TL;DR**: 改进 Mean Flows，单步生成 FID 1.72，接近多步扩散模型质量。
+
+#### Problem & Contribution
+- **解决的问题**: Mean Flows 单步生成质量仍有提升空间
+- **核心想法/方法一句话**: 改进流匹配目标和网络设计，提升单步生成质量
+- **主要贡献**:
+  1. 改进 Mean Flows 框架
+  2. 单步 FID 1.72 on ImageNet 256×256
+  3. 1-NFE (Single Function Evaluation) 生成
+
+#### Method
+- **方法结构/流程**: 改进的流匹配 + 更好的网络架构
+- **关键设计**: 
+  - 改进的流匹配目标
+  - 更强大的网络架构
+  - 更好的训练策略
+- **数学公式**:
+  - 改进目标: $$\mathcal{L}_{iMF} = \mathbb{E}\left[\|f_\theta(z) - x\|^2\right] + \lambda \mathcal{L}_{reg}$$
+  - 其中 $z \sim \mathcal{N}(0, I)$, $x \sim p_{data}$
+  - 单步采样: $x = f_\theta(z)$
+
+#### Evidence
+- **Benchmark / setting**: ImageNet 256×256, ImageNet 512×512
+- **对比对象**: Mean Flows, 扩散模型, GAN
+- **关键结果**: 
+  - ImageNet 256×256: FID 1.72 (单步!)
+  - 1-NFE 生成
+  - 接近多步扩散模型的质量
+
+#### Takeaways
+- **核心洞察**: 通过改进设计，单步生成可以达到接近多步的质量
+- **影响与意义**: 单步生成的重要进展，FID 1.72 是单步方法的 SOTA
+- **局限性**: 仍略低于最优的多步扩散模型
+
+---
+
+
+### 28 Pixel Mean Flows (2026)
+
+#### Meta
+- **Title**: Pixel Mean Flows: One-step Latent-free Image Generation
+- **Link**: [arXiv:2601.22158](https://arxiv.org/abs/2601.22158)
+- **Venue**: arXiv 2026
+- **Date**: 2026-01
+- **Tags**: [Pixel Mean Flows, One-step Generation, Latent-free, Kaiming He]
+- **Authors**: Kaiwen Zhang, et al. (Kaiming He group)
+- **TL;DR**: 无潜在空间的单步图像生成，直接在像素空间操作，FID 2.22。
+
+#### Problem & Contribution
+- **解决的问题**: 大多数单步方法依赖潜在空间，限制了细节质量
+- **核心想法/方法一句话**: 直接在像素空间进行单步生成，无需潜在空间压缩
+- **主要贡献**:
+  1. 无潜在空间的单步生成
+  2. 直接在像素空间操作
+  3. 高质量细节生成
+
+#### Method
+- **方法结构/流程**: 学习从噪声到图像的直接映射，无需 VAE 编码
+- **关键设计**: 
+  - 像素空间操作: 无压缩/解压过程
+  - 单步生成: $x = f_\theta(z)$, $z \sim \mathcal{N}(0, I)$
+  - 细节保持: 直接在像素级优化
+- **数学公式**:
+  - 直接映射: $f_\theta: \mathbb{R}^{h \times w \times c} \rightarrow \mathbb{R}^{h \times w \times c}$
+  - 目标: $$\min_\theta \mathbb{E}_{z, x}\left[\|f_\theta(z) - x\|^2\right]$$
+  - 其中 $z \sim \mathcal{N}(0, I)$, $x$ 为真实图像
+
+#### Evidence
+- **Benchmark / setting**: ImageNet 256×256, ImageNet 512×512
+- **对比对象**: 潜在空间方法、其他单步方法
+- **关键结果**: 
+  - ImageNet 256×256: FID 2.22 (单步)
+  - 无潜在空间压缩损失
+  - 更好的细节质量
+
+#### Takeaways
+- **核心洞察**: 直接在像素空间进行单步生成可以避免潜在空间的压缩损失
+- **影响与意义**: 展示了无潜在空间单步生成的可行性
+- **局限性**: 计算成本更高
+
+---
+
+### 29 Back to Basics (2026)
+
+#### Meta
+- **Title**: Back to Basics: Let Denoising Generative Models Denoise
+- **Link**: [arXiv:2601.12831](https://arxiv.org/abs/2601.12831)
+- **Venue**: arXiv 2026
+- **Date**: 2026-01
+- **Tags**: [Denoising, Diffusion Models, Back to Basics, Kaiming He]
+- **Authors**: Kaiwen Zhang, et al. (Kaiming He group)
+- **TL;DR**: 回归去噪的本质，简化扩散模型设计，专注于核心去噪任务。
+
+#### Problem & Contribution
+- **解决的问题**: 扩散模型设计越来越复杂，需要回归基础
+- **核心想法/方法一句话**: 简化扩散模型，专注于核心去噪能力
+- **主要贡献**:
+  1. 简化扩散模型设计
+  2. 回归去噪本质
+  3. 证明简单设计同样有效
+
+#### Method
+- **方法结构/流程**: 极简的扩散模型，专注于去噪任务
+- **关键设计**: 
+  - 简化架构
+  - 核心去噪目标
+  - 去除非必要组件
+- **数学公式**:
+  - 简化目标: $$\mathcal{L} = \mathbb{E}\left[\|\epsilon - \epsilon_\theta(x_t)\|^2\right]$$
+  - 无复杂条件注入
+  - 无额外正则化
+
+#### Evidence
+- **Benchmark / setting**: ImageNet
+- **对比对象**: 复杂扩散模型
+- **关键结果**: 
+  - 简化设计性能相当
+  - 去噪是核心能力
+  - 简单同样有效
+
+#### Takeaways
+- **核心洞察**: 去噪是扩散模型的核心，复杂设计可能非必需
+- **影响与意义**: 挑战复杂化趋势，回归基础
+- **局限性**: 在某些场景可能需要额外设计
+
+---
+
+### 30 Drifting Models (2026)
+
+#### Meta
+- **Title**: Generative Modeling via Drifting: One-step Diffusion via Shortcutting and Drifting
+- **Link**: [arXiv:2602.04770](https://arxiv.org/abs/2602.04770)
+- **Venue**: arXiv 2026
+- **Date**: 2026-02
+- **Tags**: [Drifting Models, One-step Generation, Diffusion, SOTA, Kaiming He]
+- **Authors**: Kaiwen Zhang, et al. (Kaiming He group)
+- **TL;DR**: 通过"漂移"机制实现单步生成，ImageNet 256×256 FID 1.54，单步生成 SOTA。
+
+#### Problem & Contribution
+- **解决的问题**: 单步生成质量与多步扩散模型仍有差距
+- **核心想法/方法一句话**: 通过漂移机制，让模型学习从噪声直接"漂移"到数据
+- **主要贡献**:
+  1. 提出漂移模型 (Drifting Models)
+  2. 单步生成 SOTA: FID 1.54 on ImageNet 256×256
+  3. 理论分析和经验验证
+
+#### Method
+- **方法结构/流程**: 学习漂移场，直接将噪声映射到数据分布
+- **关键设计**: 
+  - 漂移场: 定义从噪声到数据的漂移路径
+  - 捷径学习: 学习直接映射
+  - 单步采样: $x = \phi(z)$, $z \sim \mathcal{N}(0, I)$
+- **数学公式**:
+  - 漂移场: $$\frac{dx}{dt} = v_\theta(x, t)$$
+  - 捷径: $$x = \phi_\theta(z) = z + \int_0^1 v_\theta(x_t, t) dt$$
+  - 训练目标: $$\min_\theta \mathbb{E}_{z, x}\left[\|\phi_\theta(z) - x\|^2\right]$$
+  - 其中 $z \sim \mathcal{N}(0, I)$, $x \sim p_{data}$
+
+#### Evidence
+- **Benchmark / setting**: ImageNet 256×256, ImageNet 512×512
+- **对比对象**: 所有单步生成方法、多步扩散模型
+- **关键结果**: 
+  - ImageNet 256×256: FID 1.54 (单步 SOTA!)
+  - 超越 GAN、Mean Flows、iMF 等所有单步方法
+  - 接近多步扩散模型的最优质量
+  - 50-1000× 加速
+
+#### Takeaways
+- **核心洞察**: 漂移机制可以实现单步生成的 SOTA 质量
+- **影响与意义**: 单步生成的重要里程碑，FID 1.54 接近多步扩散的最优水平
+- **局限性**: 训练成本较高
+
+---
+
+## 架构创新
+
+## 架构创新
+
+### 31 Transformers without Normalization / DyT (2025)
+
+#### Meta
+- **Title**: Transformers without Normalization: Learning Stable and Effective Deep Networks with Dynamic Tanh
+- **Link**: [arXiv:2503.10622](https://arxiv.org/abs/2503.10622)
+- **Venue**: arXiv 2025
+- **Date**: 2025-03
+- **Tags**: [Transformers, Normalization-free, Dynamic Tanh, Architecture, Kaiming He]
+- **Authors**: Tianhong Li, et al. (Kaiming He group)
+- **TL;DR**: 提出 Dynamic Tanh (DyT) 替代 Layer Norm，实现无需归一化的 Transformer，训练更稳定。
+
+#### Problem & Contribution
+- **解决的问题**: Layer Normalization 是 Transformer 的核心组件，但是否必需？
+- **核心想法/方法一句话**: 用 Dynamic Tanh (DyT) 替换 Layer Norm，实现无需归一化的 Transformer
+- **主要贡献**:
+  1. 提出 Dynamic Tanh (DyT) 层
+  2. 实现无需归一化的 Transformer
+  3. 在多种任务上验证有效性
+
+#### Method
+- **方法结构/流程**: 用 DyT 替换 Transformer 中的 Layer Norm
+- **关键设计**: 
+  - Dynamic Tanh: $y = \tanh(\alpha x)$
+  - 可学习参数 $\alpha$ 控制饱和程度
+  - 无需均值/方差统计
+- **数学公式**:
+  - DyT: $$y = \tanh(\alpha \cdot x)$$
+  - 其中 $\alpha$ 是可学习参数
+  - 对比 Layer Norm: $$y = \frac{x - \mu}{\sigma} \cdot \gamma + \beta$$
+  - DyT 更简单，无需统计计算
+
+#### Evidence
+- **Benchmark / setting**: Vision (ImageNet), NLP (GPT-style), Speech
+- **对比对象**: 标准 Transformer (with Layer Norm)
+- **关键结果**: 
+  - 性能匹配或超越标准 Transformer
+  - 训练更稳定
+  - 推理更快（无需统计计算）
+
+#### Takeaways
+- **核心洞察**: Layer Norm 可以被更简单的操作替代
+- **影响与意义**: 挑战 Transformer 的基础设计，可能简化架构
+- **局限性**: 需要更多研究理解其作用机制
+
+---
+
 ## 效率优化与压缩
 
-### 18. DC-AE - Deep Compression Autoencoder (2024)
+### 32 DC-AE - Deep Compression Autoencoder (2024)
 
 #### Meta
 - **Title**: Deep Compression Autoencoder for Efficient High-Resolution Diffusion Models
 - **Link**: [arXiv:2410.10733](https://arxiv.org/abs/2410.10733)
 - **Venue**: ICLR 2025
 - **Date**: 2024-10
-- **Tags**: [Autoencoder, Compression, Efficient Diffusion, High-Resolution, Residual Encoding]
+- **Tags**: [Autoencoder, Compression, Efficient Diffusion, High-Resolution, Residual Encoding, Song Han]
 - **Authors**: Han Cai, Muyang Li, Ju Hu, Yawen Cui, Chuang Gan, Song Han
 - **TL;DR**: 提出深度压缩自编码器 (DC-AE) 新家族，实现最高 128x 空间压缩比，解决高空间压缩比下重建精度不足的问题。
 
