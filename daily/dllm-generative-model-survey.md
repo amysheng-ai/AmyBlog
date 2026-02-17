@@ -35,7 +35,8 @@ draft: false
    - MDLM (2024)
    - BD3-LMs
 6. [Kaiming He 近期工作](#kaiming-he-近期工作)
-7. [研究趋势与洞察](#研究趋势与洞察)
+7. [效率优化与压缩 (Song Han 组)](#效率优化与压缩)
+8. [研究趋势与洞察](#研究趋势与洞察)
 
 ---
 
@@ -441,10 +442,19 @@ MAR 核心创新：
 
 ---
 
-### 16. DC-AE - Deep Compression Autoencoder (2024)
+### 16. 其他相关探索
+
+**生成模型与表示学习的统一**:  
+Kaiming He 组持续关注生成模型与自监督表示学习的结合，探索 MAE (Masked Autoencoder) 与生成模型的融合方向。
+
+---
+
+## 效率优化与压缩 (Song Han 组)
+
+### DC-AE - Deep Compression Autoencoder (2024)
 
 **论文**: [arXiv:2410.10733](https://arxiv.org/abs/2410.10733)  
-**作者**: Han Cai 等 (MIT, 与 Kaiming He 工作相关)  
+**作者**: Han Cai 等 (MIT, Song Han 组)  
 **发表**: ICLR 2025
 
 **核心贡献**:
@@ -470,12 +480,7 @@ DC-AE 关键技术：
   - 17.9× 训练速度提升
   - 相比 SD-VAE-f8 取得更好的 FID
 
----
-
-### 17. 其他相关探索
-
-**生成模型与表示学习的统一**:  
-Kaiming He 组持续关注生成模型与自监督表示学习的结合，探索 MAE (Masked Autoencoder) 与生成模型的融合方向。
+**影响**: DC-AE 为高效图像生成提供了关键基础设施，是实用化生成模型系统的重要组成部分。
 
 ---
 
@@ -610,6 +615,8 @@ MAR 尝试结合两者的优势——自回归的结构 + 连续空间的扩散�
 
 **Kaiming He 近期工作**:
 - MAR: [arXiv:2406.11838](https://arxiv.org/abs/2406.11838) | [代码](https://github.com/LTH14/mar)
+
+**Song Han 组 (效率优化)**:
 - DC-AE: [arXiv:2410.10733](https://arxiv.org/abs/2410.10733)
 
 ---
