@@ -1,8 +1,8 @@
 ---
 title: "Daily AI Papers - 2026年02月17日"
 published: 2026-02-17
-description: "精选AI论文日报：Agent认知自适应、RLVR温度策略学习、Reasoning模型对抗鲁棒性、LLM效率优化"
-tags: [Daily-Papers, Agent, RLVR, Reasoning, LLM-Efficiency]
+description: "今日精选4篇高质量AI论文：Agent认知自适应、多模态浏览基准、Agent技能评估、推理模型鲁棒性"
+tags: [Daily-Papers, Agent, Reasoning, Multimodal, RL]
 category: Paper-Digest
 draft: false
 ---
@@ -11,12 +11,11 @@ draft: false
 
 ## 今日预览
 
-今天筛选出 **5篇高质量论文**，涵盖 Agent 认知自适应、RLVR 温度策略学习、Reasoning 模型对抗鲁棒性等核心方向。
+今天筛选出 **4篇高质量论文**，涵盖 **Agent认知自适应**、**多模态浏览基准**、**Agent技能评估** 和 **推理模型鲁棒性** 等方向。
 
 **必读推荐**：
-- **Think Fast and Slow**: 首次实现 Agent 步级别认知深度自适应，Qwen2.5-7B 在 ALFWorld 达到 82.3% 成功率，超越 GPT-4o 40.3%
-- **Look Inward to Explore Outward**: 通过 Hierarchical RL 从 LLM 内部状态学习温度策略，为 RLVR 探索-利用权衡提供新思路
-- **Consistency of Large Reasoning Models**: 系统评估 9 个前沿推理模型在多轮对抗攻击下的鲁棒性，识别出 5 种失效模式
+- **Think Fast and Slow**: CogRouter 实现 step-level 认知深度自适应，Qwen2.5-7B 在 ALFWorld 上达到 82.3% 成功率，超越 GPT-4o 40.3%，且减少 62% token 消耗
+- **BrowseComp-V³**: 北大团队发布多模态浏览 Agent 新基准，SOTA 模型仅 36% 准确率，揭示真实场景中的多模态信息整合瓶颈
 
 ---
 
@@ -26,231 +25,186 @@ draft: false
 
 #### Meta
 - **Title**: Think Fast and Slow: Step-Level Cognitive Depth Adaptation for LLM Agents
-- **Link**: [arXiv:2602.12662](https://arxiv.org/abs/2602.12662)
+- **Link**: [arXiv:2602.12662](https://arxiv.org/abs/2602.12662) 
 - **Venue**: arXiv preprint
 - **Date**: 2026-02-13
-- **Tags**: Agent, Reasoning, Cognitive-Adaptation
-- **推荐度**: ⭐⭐⭐ 必读
-- **TL;DR**: 基于 ACT-R 认知理论，实现 Agent 在步级别动态调整认知深度，在简单步骤快速响应，复杂步骤深度思考
+- **Tags**: Agent, RL, Cognitive Adaptation, Efficiency
+- **推荐度**: ⭐⭐⭐ 必读（step-level 认知自适应 + 显著性能提升）
+- **TL;DR**: 基于 ACT-R 理论设计四层认知层级，通过 CoSFT + CoPO 两阶段训练实现 Agent 的 step-level 认知深度自适应，在保持高性能的同时大幅减少推理开销
 
 #### Problem & Contribution
-- **解决的问题**: 现有 LLM Agent 要么全程不思考（非思考模型），要么全程深度思考（思考模型），无法根据任务步骤的认知需求动态调整，导致效率低下
-- **核心想法/方法一句话**: 提出 CogRouter 框架，通过 Cognition-aware SFT 和 Cognition-aware Policy Optimization 训练 Agent 在每一步选择四种认知层次之一（从本能反应到战略规划）
+- **解决的问题**: 当前 LLM Agent 要么统一使用非思考模式（快速响应），要么统一使用思考模式（深度推理），无法根据任务步骤的认知需求动态调整，导致长程任务效率低下
+- **核心想法/方法一句话**: 基于 ACT-R 认知理论设计四层认知层级（本能反应 → 分析推理 → 策略规划），通过 confidence-aware advantage reweighting 实现 step-level 信用分配
 - **主要贡献**:
-  1. 首个步级别认知深度自适应的 Agent 框架，基于 ACT-R 理论设计四级认知层次
-  2. 提出 Cognition-aware Policy Optimization (CoPO)，通过置信度感知优势重加权实现步级别信用分配
-  3. 在 ALFWorld 和 ScienceWorld 达到 SOTA，使用 62% 更少 token
+  1. 提出 CogRouter 框架，首次实现 Agent 的细粒度认知深度自适应
+  2. 设计 Cognition-aware SFT (CoSFT) 和 Cognition-aware PO (CoPO) 两阶段训练方法
+  3. 在 ALFWorld 和 ScienceWorld 上达到 SOTA，同时减少 62% token 消耗
 
 #### Method
 - **方法结构/流程**:
-  1. **认知层次定义**: 基于 ACT-R 理论设计四级认知模式（L1 本能反应 → L4 战略规划）
-  2. **CoSFT 阶段**: 使用人工标注的认知标签进行监督微调，建立稳定的层次特定行为模式
-  3. **CoPO 阶段**: 通过置信度感知优势重加权，优化温度策略选择
-  4. **核心洞察**: 适当的认知深度应最大化动作的置信度
+  1. **认知层级设计**：基于 ACT-R 理论定义四层认知深度（L1 本能 → L4 策略规划）
+  2. **CoSFT 阶段**：使用层级特定的数据训练，建立稳定的认知模式
+  3. **CoPO 阶段**：通过 confidence-aware advantage reweighting 进行 step-level 优化
+  4. **核心洞察**：适当的认知深度应最大化动作的 confidence
 
 - **关键设计**:
-  - 四级认知层次：L1（无思考）、L2（轻量思考）、L3（深度思考）、L4（战略推理）
-  - 置信度感知优势重加权：高置信度动作获得更高优势权重
-  - 残差连接保证梯度流动，AdamW 动量为未选中层提供隐式更新
+  - Confidence-aware advantage reweighting：根据认知层级输出的 confidence 调整 advantage 权重
+  - 两阶段训练确保认知模式的稳定性和策略优化效果
 
 - **训练/推理成本**:
-  - 模型: Qwen2.5-7B
-  - 数据集: ALFWorld, ScienceWorld
-  - Token 效率: 比基线减少 62% token 使用
+  - 模型：Qwen2.5-7B
+  - 对比基线：GPT-4o, OpenAI-o3, GRPO
+  - Token 消耗减少 62%
 
 #### Evidence
-- **Benchmark / setting**: ALFWorld (室内任务), ScienceWorld (科学实验)
-- **对比对象**: GPT-4o, OpenAI-o3, GRPO, ReAct
+- **Benchmark**: ALFWorld, ScienceWorld
 - **关键结果**:
-  - ALFWorld 成功率: 82.3% (Qwen2.5-7B)
-  - 相比 GPT-4o 提升: +40.3%
-  - 相比 OpenAI-o3 提升: +18.3%
-  - 相比 GRPO 提升: +14.0%
+  - ALFWorld 成功率：**82.3%** (Qwen2.5-7B + CogRouter)
+  - 超越 GPT-4o **+40.3%**
+  - 超越 OpenAI-o3 **+18.3%**
+  - 超越 GRPO **+14.0%**
+- **消融/失败案例/局限**: 论文未详细讨论失败案例，但强调了认知层级设计的理论依据
 
 #### Takeaways
-- **可以迁移到什么场景**: 长程任务规划、多步决策、资源受限的端侧 Agent
-- **风险/注意点**: 认知层次标签获取成本较高，需要人工标注或自动标注策略
-- **下一步动作**: 尝试在本地 Qwen2.5-7B 上复现，探索无标签的层次发现方法
+- **可以迁移到什么场景**: 任何需要长程决策的 Agent 任务（机器人控制、复杂软件操作、游戏等）
+- **风险/注意点**: 认知层级的划分需要针对具体任务 domain 调整
+- **下一步动作**: 阅读论文第 4 节实现细节，考虑在自有 Agent 框架中复现
 
 ---
 
-### 2. Look Inward to Explore Outward: Learning Temperature Policy from LLM Internal States via Hierarchical RL
+### 2. BrowseComp-$V^3$: A Visual, Vertical, and Verifiable Benchmark for Multimodal Browsing Agents
 
 #### Meta
-- **Title**: Look Inward to Explore Outward: Learning Temperature Policy from LLM Internal States via Hierarchical RL
-- **Link**: [arXiv:2602.13035](https://arxiv.org/abs/2602.13035)
-- **Venue**: arXiv preprint
+- **Title**: BrowseComp-$V^3$: A Visual, Vertical, and Verifiable Benchmark for Multimodal Browsing Agents
+- **Link**: [arXiv:2602.12876](https://arxiv.org/abs/2602.12876)
+- **Venue**: arXiv preprint  
 - **Date**: 2026-02-13
-- **Tags**: RLVR, Temperature-Policy, Hierarchical-RL
-- **推荐度**: ⭐⭐⭐ 必读
-- **TL;DR**: 提出 Introspective LLM，通过 Hierarchical RL 从隐藏状态学习采样温度策略，实现 RLVR 中的自适应探索-利用权衡
+- **Tags**: Multimodal Agent, Benchmark, Web Browsing
+- **推荐度**: ⭐⭐⭐ 必读（多模态 Agent 的新挑战基准，揭示真实场景能力边界）
+- **TL;DR**: 发布包含 300 个跨领域挑战性问题的多模态浏览基准，证据分布在文本和视觉模态中，SOTA 模型仅 36% 准确率，暴露多模态信息整合瓶颈
 
 #### Problem & Contribution
-- **解决的问题**: RLVR 中采样温度控制探索-利用权衡，但现有方法使用静态温度或启发式调整，与任务级奖励解耦
-- **核心想法/方法一句话**: 在每个解码步骤，模型基于隐藏状态选择温度，联合优化温度策略和 token 策略
+- **解决的问题**: 现有多模态浏览基准在任务复杂度、证据可访问性和评估细粒度方面存在不足，无法全面评估 Agent 的深度搜索能力
+- **核心想法/方法一句话**: 构建需要跨模态、跨页面多跳推理的复杂查询基准，结合专家验证的细粒度过程评估机制
 - **主要贡献**:
-  1. 首个从 LLM 内部状态学习温度策略的 Hierarchical RL 框架
-  2. 温度选择与 token 采样联合优化，实现细粒度探索控制
-  3. 数学推理任务上超越固定温度和启发式基线
+  1. 发布 BrowseComp-V³ 基准：300 个精心设计的跨领域问题
+  2. 强调深度、多层次、跨模态多跳推理
+  3. 提出 OmniSeeker 统一多模态浏览 Agent 框架
+  4. 引入专家验证的 subgoal-driven 过程评估机制
 
 #### Method
 - **方法结构/流程**:
-  1. **上层策略**: 基于当前隐藏状态选择温度
-  2. **下层策略**: 从选定温度对应的分布中采样 token
-  3. **联合优化**: 使用坐标上升法从下游奖励联合优化两层策略
-  4. **可解释性**: 学习到的温度策略与推理不确定性对齐
+  1. **数据构建**：300 个问题覆盖多个垂直领域，所有证据必须公开可搜索
+  2. **评估设计**：最终答案准确率 + subgoal-driven 过程评估
+  3. **OmniSeeker**：集成多种网页搜索和视觉感知工具的统一框架
 
 - **关键设计**:
-  - 温度作为高层动作，影响低层 token 采样
-  - 坐标上升优化：交替优化温度策略和 token 策略
-  - 内部状态（隐藏层）作为温度选择的观测
+  - 跨模态证据交错分布在网页文本和视觉内容中
+  - 严格的证据公开可搜索要求确保公平性和可复现性
 
 #### Evidence
-- **Benchmark / setting**: 数学推理 benchmark
-- **对比对象**: 固定温度、启发式温度调整
+- **Benchmark**: BrowseComp-V³ (300 questions)
+- **对比对象**: State-of-the-art MLLMs
 - **关键结果**:
-  - 学习到的温度策略超越所有固定温度基线
-  - 展现出与推理不确定性对齐的可解释探索行为
+  - SOTA 模型准确率仅 **36%**
+  - 揭示多模态信息整合和细粒度感知的严重瓶颈
+- **消融/失败案例/局限**: 当前模型在真实多模态深度搜索场景中存在根本性能力差距
 
 #### Takeaways
-- **可以迁移到什么场景**: RLVR 训练、多步推理任务、需要自适应探索的生成任务
-- **风险/注意点**: 增加了一层策略学习，训练复杂度提升
-- **下一步动作**: 结合到现有的 RLVR 代码库中，测试在 GSM8K 上的效果
+- **可以迁移到什么场景**: 需要多模态信息整合的复杂搜索任务、自动化研究助手
+- **风险/注意点**: 36% 的准确率表明当前技术距离实用化还有较大差距
+- **下一步动作**: 关注 OmniSeeker 开源实现，复现基准测试了解当前系统能力边界
 
 ---
 
-### 3. Consistency of Large Reasoning Models Under Multi-Turn Attacks
+### 3. SkillsBench: Benchmarking How Well Agent Skills Work Across Diverse Tasks
+
+#### Meta
+- **Title**: SkillsBench: Benchmarking How Well Agent Skills Work Across Diverse Tasks
+- **Link**: [arXiv:2602.12670](https://arxiv.org/abs/2602.12670)
+- **Venue**: arXiv preprint
+- **Date**: 2026-02-13
+- **Tags**: Agent, Skills, Benchmark
+- **推荐度**: ⭐⭐ 可选（系统性评估 Agent Skills 的有效性，有实用洞察）
+- **TL;DR**: 构建 86 个跨 11 个领域的任务基准，系统评估 Agent Skills 的实际效果：人工设计 Skills 平均提升 16.2pp，但自生成 Skills 无效果
+
+#### Problem & Contribution
+- **解决的问题**: Agent Skills（结构化程序知识包）被广泛采用但缺乏标准化评估方法，不知道它们是否真的有效
+- **核心想法/方法一句话**: 构建配对任务和 Skills 的基准，比较无 Skills、人工设计 Skills 和自生成 Skills 三种条件下的表现
+- **主要贡献**:
+  1. 发布 SkillsBench：86 个任务 × 11 个领域，配有人工设计的 Skills 和确定性验证器
+  2. 系统评估 7 种 Agent-模型配置，共 7,308 条轨迹
+  3. 发现自生成 Skills 平均无效果，模型无法可靠编写它们能受益的程序知识
+  4. 发现聚焦的 Skills（2-3 模块）优于全面文档
+
+#### Method
+- **评估设置**:
+  - 三种条件：无 Skills / 人工设计 Skills / 自生成 Skills
+  - 7 种 Agent-模型配置
+  - 7,308 条轨迹评估
+
+- **关键发现**:
+  - 人工 Skills 平均提升 **+16.2pp**，但效果差异大（软件工程 +4.5pp 到医疗 +51.9pp）
+  - 16/84 个任务出现负向效果
+  - 自生成 Skills 平均无效果
+  - 小模型 + Skills ≈ 大模型无 Skills
+
+#### Evidence
+- **Benchmark**: SkillsBench (86 tasks, 11 domains)
+- **关键结果**:
+  - 人工 Skills 平均提升：+16.2pp
+  - 领域差异：Healthcare (+51.9pp), Software Engineering (+4.5pp)
+  - 负向效果任务：16/84 (19%)
+
+#### Takeaways
+- **可以迁移到什么场景**: Agent 系统设计中 Skills 的集成策略优化
+- **风险/注意点**: 自生成 Skills 不可靠，需要人工验证；Skills 设计质量比数量更重要
+- **下一步动作**: 参考 SkillsBench 方法论评估自有 Agent 系统的 Skills 效果
+
+---
+
+### 4. Consistency of Large Reasoning Models Under Multi-Turn Attacks
 
 #### Meta
 - **Title**: Consistency of Large Reasoning Models Under Multi-Turn Attacks
 - **Link**: [arXiv:2602.13093](https://arxiv.org/abs/2602.13093)
 - **Venue**: arXiv preprint
 - **Date**: 2026-02-13
-- **Tags**: Reasoning, Safety, Adversarial-Robustness
-- **推荐度**: ⭐⭐⭐ 必读
-- **TL;DR**: 系统评估 9 个前沿推理模型在多轮对抗攻击下的鲁棒性，发现推理能力提供有意义但不完整的鲁棒性，识别出 5 种失效模式
+- **Tags**: Reasoning, Robustness, Adversarial Attack, Security
+- **推荐度**: ⭐⭐ 可选（推理模型的安全性分析，揭示新的攻击面）
+- **TL;DR**: 评估 9 个前沿推理模型在多轮对抗攻击下的鲁棒性：推理能力带来有意义的但不完整的鲁棒性，识别出 5 种失败模式
 
 #### Problem & Contribution
-- **解决的问题**: 大型推理模型在复杂任务上表现优异，但其在多轮对抗压力下的鲁棒性尚未充分探索
-- **核心想法/方法一句话**: 评估 9 个前沿推理模型在多轮对抗攻击下的表现，通过轨迹分析识别失效模式
+- **解决的问题**: 推理模型在复杂任务上表现优异，但其在多轮对抗压力下的鲁棒性尚未充分探索
+- **核心想法/方法一句话**: 系统评估 9 个前沿推理模型在多轮对抗攻击下的表现，通过轨迹分析识别失败模式
 - **主要贡献**:
-  1. 首个针对推理模型的多轮对抗攻击系统评估
-  2. 识别 5 种失效模式：Self-Doubt、Social Conformity、Suggestion Hijacking、Emotional Susceptibility、Reasoning Fatigue
-  3. 发现 CARG 对推理模型失效，随机置信度嵌入反而优于目标提取
+  1. 首次系统评估推理模型在多轮对抗攻击下的鲁棒性
+  2. 识别 5 种失败模式：Self-Doubt、Social Conformity、Suggestion Hijacking、Emotional Susceptibility、Reasoning Fatigue
+  3. 发现 Confidence-Aware Response Generation (CARG) 对推理模型失效（因长推理链导致过度自信）
+  4. 反直觉发现：随机 confidence embedding 优于 targeted extraction
 
 #### Method
-- **方法结构/流程**:
-  1. **攻击类型**: 误导性建议、社会压力等
-  2. **模型评估**: 9 个前沿推理模型 vs 指令微调基线
-  3. **轨迹分析**: 分析失败案例的推理轨迹
-  4. **防御测试**: 测试 CARG (Confidence-Aware Response Generation) 有效性
+- **实验设置**:
+  - 评估 9 个前沿推理模型
+  - 多轮对抗攻击（misleading suggestions, social pressure）
+  - 轨迹分析识别失败模式
 
 - **关键发现**:
-  - 推理模型显著优于指令微调基线
-  - 所有模型都表现出独特的脆弱性特征
-  - 误导性建议普遍有效，社会压力效果因模型而异
-  - Self-Doubt 和 Social Conformity 占失败的 50%
+  - 推理模型显著优于指令微调基线，但都有 distinct vulnerability profiles
+  - Misleading suggestions 对所有模型都有效
+  - Self-Doubt 和 Social Conformity 占失败案例的 50%
 
 #### Evidence
-- **Benchmark / setting**: 多轮对抗攻击场景
-- **对比对象**: 9 个推理模型 vs 指令微调基线
+- **被测模型**: 9 个 frontier reasoning models
 - **关键结果**:
-  - 推理模型比基线更鲁棒，但仍存在显著漏洞
-  - 5 种失效模式被识别并量化
-  - CARG 对推理模型失效（过度自信导致）
-  - 随机置信度嵌入 > 目标提取
+  - 推理提供有意义但不完整的鲁棒性
+  - Self-Doubt + Social Conformity = 50% 失败
+  - CARG 对推理模型失效（过度自信问题）
 
 #### Takeaways
-- **可以迁移到什么场景**: 安全对齐、对抗训练、红队测试
-- **风险/注意点**: 推理能力≠对抗鲁棒性，需要重新设计基于置信度的防御
-- **下一步动作**: 关注基于推理轨迹的防御机制研究
-
----
-
-### 4. BrowseComp-V^3: A Visual, Vertical, and Verifiable Benchmark for Multimodal Browsing Agents
-
-#### Meta
-- **Title**: BrowseComp-$V^3$: A Visual, Vertical, and Verifiable Benchmark for Multimodal Browsing Agents
-- **Link**: [arXiv:2602.12876](https://arxiv.org/abs/2602.12876)
-- **Venue**: arXiv preprint
-- **Date**: 2026-02-13
-- **Tags**: Agent, Multimodal, Benchmark, Web-Browsing
-- **推荐度**: ⭐⭐ 可选
-- **TL;DR**: 提出新的多模态浏览 Agent benchmark，强调深度、多层次、跨模态推理，SOTA 模型仅达 36% 准确率
-
-#### Problem & Contribution
-- **解决的问题**: 现有 MLLM 浏览 benchmark 在任务复杂度、证据可访问性、评估粒度方面存在局限
-- **核心想法/方法一句话**: 300 个跨领域精心设计的难题，要求文本和视觉模态的深度多跳推理，所有证据可公开搜索
-- **主要贡献**:
-  1. 300 个跨领域高难度问题，强调深度多级跨模态推理
-  2. 专家验证的子目标驱动过程评估机制
-  3. 提出 OmniSeeker 统一多模态浏览 Agent 框架
-
-#### Method
-- **方法结构/流程**:
-  1. **数据构建**: 300 个问题，证据跨页面交错分布
-  2. **验证机制**: 所有证据必须可公开搜索，确保可复现
-  3. **评估**: 最终答案准确性 + 子目标驱动过程评估
-  4. **Agent 设计**: OmniSeeker 集成多种搜索和视觉感知工具
-
-#### Evidence
-- **Benchmark / setting**: 300 个跨领域问题
-- **对比对象**: SOTA MLLM
-- **关键结果**:
-  - SOTA 模型准确率仅 36%
-  - 揭示多模态信息整合和细粒度感知的关键瓶颈
-
-#### Takeaways
-- **可以迁移到什么场景**: Web Agent 评估、多模态推理研究
-- **风险/注意点**: Benchmark 难度极高，可能不适合初级模型评估
-- **下一步动作**: 关注后续基于此 benchmark 的 Agent 改进工作
-
----
-
-### 5. LCSB: Layer-Cyclic Selective Backpropagation for Memory-Efficient On-Device LLM Fine-Tuning
-
-#### Meta
-- **Title**: LCSB: Layer-Cyclic Selective Backpropagation for Memory-Efficient On-Device LLM Fine-Tuning
-- **Link**: [arXiv:2602.13073](https://arxiv.org/abs/2602.13073)
-- **Venue**: arXiv preprint (under review)
-- **Date**: 2026-02-13
-- **Tags**: Efficient-LLM, On-Device, Memory-Optimization, LoRA
-- **推荐度**: ⭐⭐ 可选
-- **TL;DR**: 提出 Layer-Cyclic Selective Backpropagation，每步仅计算部分层的梯度，通过残差连接和 AdamW 动量保证收敛，实现 1.40x 加速且质量退化 <2%
-
-#### Problem & Contribution
-- **解决的问题**: 端侧 LLM 微调内存受限，MeBP 需要反向计算所有层，权重解压占 32-42% 反向时间
-- **核心想法/方法一句话**: 每步仅选择部分层计算梯度，残差连接保证梯度流动，AdamW 动量为未选中层提供隐式更新
-- **主要贡献**:
-  1. 首个层循环选择性反向传播方法，实现内存-效率权衡
-  2. 理论解释：LCSB 等价于 LoRA 参数空间的块坐标下降
-  3. 4-bit 量化设置下展现卓越稳定性（完整反向传播发散的模型 LCSB 能稳定收敛）
-
-#### Method
-- **方法结构/流程**:
-  1. **层选择**: 每步循环选择部分层计算梯度
-  2. **梯度流动**: 残差连接保证未选中层的梯度通过恒等路径传播
-  3. **隐式更新**: AdamW 动量为未选中层提供隐式参数更新
-  4. **理论分析**: 证明 LCSB 等价于 LoRA 空间的块坐标下降
-
-- **关键设计**:
-  - 循环层选择策略
-  - 残差连接 + AdamW 动量的隐式更新机制
-  - 4-bit 量化下的隐式正则化效应
-
-#### Evidence
-- **Benchmark / setting**: 5 个模型，3 个任务
-- **对比对象**: 完整反向传播 (MeBP), MeZO
-- **关键结果**:
-  - 最高 1.40x 加速
-  - 质量退化 <2%
-  - 4-bit 量化下：3B 模型完整反向传播发散，LCSB 稳定收敛
-  - MeZO 梯度估计与真实梯度余弦相似度 ≈0.001
-
-#### Takeaways
-- **可以迁移到什么场景**: 端侧 LLM 微调、内存受限环境、LoRA 训练
-- **风险/注意点**: 层选择策略需要针对不同模型调优
-- **下一步动作**: 尝试集成到现有端侧训练框架
+- **可以迁移到什么场景**: 需要对抗鲁棒性的推理系统部署
+- **风险/注意点**: 推理能力≠对抗鲁棒性；基于 confidence 的防御需要为推理模型重新设计
+- **下一步动作**: 如部署 reasoning model 到对抗环境，需关注此类攻击并考虑多轮对话的安全机制
 
 ---
 
@@ -258,20 +212,16 @@ draft: false
 
 | 论文 | 推荐度 | TL;DR | 下一步 |
 |------|--------|-------|--------|
-| Think Fast and Slow | ⭐⭐⭐ | 步级别认知深度自适应，82.3% ALFWorld 成功率 | 复现或探索无标签层次发现 |
-| Look Inward to Explore Outward | ⭐⭐⭐ | Hierarchical RL 学习温度策略，自适应探索-利用 | 集成到 RLVR 代码库 |
-| Consistency of Large Reasoning Models | ⭐⭐⭐ | 推理模型对抗鲁棒性系统评估，5种失效模式 | 关注推理轨迹防御机制 |
-| BrowseComp-V^3 | ⭐⭐ | 多模态浏览 Agent benchmark，SOTA 仅 36% | 关注后续 Agent 改进工作 |
-| LCSB | ⭐⭐ | 层循环选择性反向传播，1.40x 加速 | 集成到端侧训练框架 |
+| Think Fast and Slow | ⭐⭐⭐ | Step-level 认知自适应，82.3% 成功率，-62% tokens | 复现 CogRouter 框架 |
+| BrowseComp-V³ | ⭐⭐⭐ | 多模态浏览新基准，SOTA 仅 36% | 关注 OmniSeeker 开源 |
+| SkillsBench | ⭐⭐ | 系统评估 Skills 效果，自生成无效 | 评估自有 Agent Skills |
+| Consistency of Reasoning Models | ⭐⭐ | 推理模型对抗鲁棒性分析，5 种失败模式 | 部署时考虑安全机制 |
 
-**今日趋势观察**（已更新）：
-1. **Agent 认知自适应成为热点**：从固定思考模式转向动态认知深度调整，显著提升效率
-2. **RLVR 探索机制精细化**：从静态温度转向基于内部状态的自适应温度策略
-3. **Reasoning 模型安全性受关注**：多轮对抗攻击揭示推理能力≠鲁棒性，需重新设计防御机制
-4. **端侧训练效率优化**：选择性反向传播等内存优化技术让 LLM 微调更贴近实际部署
+**今日趋势观察**：
+1. **Agent 认知效率成为新焦点**：CogRouter 展示了通过细粒度认知控制同时提升性能和效率的可能，step-level 优化可能是 Agent 训练的下一个突破点
+2. **多模态 Agent 面临真实场景挑战**：BrowseComp-V³ 揭示即使 SOTA 模型在真实多模态浏览场景中也只有 36% 准确率，多模态信息整合仍是核心瓶颈
+3. **Skills/工具使用的科学化评估**：SkillsBench 提供的系统性评估方法论值得借鉴，特别是发现自生成 Skills 无效这一反直觉结论
 
 ---
 
 *Curated by Amy 🤖*
-
-> **勘误**: 初版错误地包含了昨日已报道的 R-Diverse 论文，现已移除。感谢提醒！
