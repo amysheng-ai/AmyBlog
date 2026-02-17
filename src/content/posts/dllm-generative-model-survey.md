@@ -1081,7 +1081,7 @@ draft: false
 ---
 ## Kaiming He 近期工作
 
-### 19 MAR - Autoregressive Image Generation without Vector Quantization (2024)
+### 24 MAR - Autoregressive Image Generation without Vector Quantization (2024)
 
 #### Meta
 - **Title**: Autoregressive Image Generation without Vector Quantization
@@ -1129,7 +1129,7 @@ draft: false
 ---
 
 
-### 20 Fluid - Continuous Token Autoregressive Image Generation (2024)
+### 25 Fluid - Continuous Token Autoregressive Image Generation (2024)
 
 #### Meta
 - **Title**: Fluid: Scaling Autoregressive Text-to-Image Generative Models with Continuous Tokens
@@ -1175,7 +1175,7 @@ draft: false
 
 ---
 
-### 21 Is Noise Conditioning Necessary? (2025)
+### 26 Is Noise Conditioning Necessary? (2025)
 
 #### Meta
 - **Title**: Is Noise Conditioning Necessary for Denoising Generative Models?
@@ -1220,7 +1220,7 @@ draft: false
 
 ---
 
-### 22 Fractal Generative Models (2025)
+### 27 Fractal Generative Models (2025)
 
 #### Meta
 - **Title**: Fractal Generative Models
@@ -1265,7 +1265,7 @@ draft: false
 
 ---
 
-### 23 Mean Flows (2025)
+### 28 Mean Flows (2025)
 
 #### Meta
 - **Title**: Mean Flows: One-step Generative Modeling of Standard Normal Distributions
@@ -1312,7 +1312,7 @@ draft: false
 ---
 
 
-### 24 Diffuse and Disperse (2025)
+### 29 Diffuse and Disperse (2025)
 
 #### Meta
 - **Title**: Diffuse and Disperse: Diffusion Model with Learned Representation Regularization
@@ -1357,7 +1357,7 @@ draft: false
 
 ---
 
-### 25 JiT - Just Image Transformers (2025)
+### 30 JiT - Just Image Transformers (2025)
 
 #### Meta
 - **Title**: JiT: Just Image Transformers for Image Generation
@@ -1402,7 +1402,7 @@ draft: false
 
 ---
 
-### 26 BiFlow - Bidirectional Normalizing Flow (2025)
+### 31 BiFlow - Bidirectional Normalizing Flow (2025)
 
 #### Meta
 - **Title**: BiFlow: Bidirectional Normalizing Flow for Fast and Accurate Image Generation
@@ -1448,7 +1448,7 @@ draft: false
 
 ---
 
-### 27 Improved Mean Flows / iMF (2025)
+### 32 Improved Mean Flows / iMF (2025)
 
 #### Meta
 - **Title**: Improved Mean Flows for One-Step Generative Modeling
@@ -1494,7 +1494,7 @@ draft: false
 ---
 
 
-### 28 Pixel Mean Flows (2026)
+### 33 Pixel Mean Flows (2026)
 
 #### Meta
 - **Title**: Pixel Mean Flows: One-step Latent-free Image Generation
@@ -1539,7 +1539,7 @@ draft: false
 
 ---
 
-### 29 Back to Basics (2026)
+### 34 Back to Basics (2026)
 
 #### Meta
 - **Title**: Back to Basics: Let Denoising Generative Models Denoise
@@ -1584,7 +1584,7 @@ draft: false
 
 ---
 
-### 30 Drifting Models (2026)
+### 35 Drifting Models (2026)
 
 #### Meta
 - **Title**: Generative Modeling via Drifting: One-step Diffusion via Shortcutting and Drifting
@@ -1635,7 +1635,7 @@ draft: false
 
 ## 架构创新
 
-### 31 Transformers without Normalization / DyT (2025)
+### 36 Transformers without Normalization / DyT (2025)
 
 #### Meta
 - **Title**: Transformers without Normalization: Learning Stable and Effective Deep Networks with Dynamic Tanh
@@ -1683,7 +1683,7 @@ draft: false
 
 ## 效率优化与压缩
 
-### 32 DC-AE - Deep Compression Autoencoder (2024)
+### 37 DC-AE - Deep Compression Autoencoder (2024)
 
 #### Meta
 - **Title**: Deep Compression Autoencoder for Efficient High-Resolution Diffusion Models
