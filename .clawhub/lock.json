@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "skills": {
+    "agent-browser": {
+      "version": "0.2.0",
+      "installedAt": 1770803375381
+    },
+    "Humanizer-zh": {
+      "version": "1.0.0",
+      "installedAt": 1771142320452
+    },
+    "Notion": {
+      "version": "1.0.0",
+      "installedAt": 1771144996659
+    }
+  }
+}

@@ -1,0 +1,69 @@
+name: Sync to AmyBlog
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'labs/**'
+      - 'daily/**'
+      - 'topics/**'
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout ai-reports
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Checkout AmyBlog
+        uses: actions/checkout@v4
+        with:
+          repository: amysheng-ai/AmyBlog
+          token: ${{ secrets.SYNC_TOKEN }}
+          path: AmyBlog
+
+      - name: Sync files
+        run: |
+          mkdir -p AmyBlog/src/content/posts
+          
+          for file in labs/*.md daily/*.md topics/*.md; do
+            [ -e "$file" ] || continue
+            filename=$(basename "$file")
+            
+            if ! head -1 "$file" | grep -q "^---"; then
+              title=$(echo "$filename" | sed 's/\.md$//' | sed 's/-/ /g' | sed 's/_/ /g')
+              {
+                echo "---"
+                echo "title: \"$title\""
+                echo "published: $(date +%Y-%m-%d)"
+                echo "description: \"Research report synced from ai-reports\""
+                echo "tags: [Research, AI]"
+                echo "category: Research"
+                echo "draft: false"
+                echo "---"
+                echo ""
+                cat "$file"
+              } > "AmyBlog/src/content/posts/$filename"
+            else
+              cp "$file" "AmyBlog/src/content/posts/"
+            fi
+          done
+
+      - name: Commit and push to AmyBlog
+        run: |
+          cd AmyBlog
+          git config user.name "Amy"
+          git config user.email "amysheng.ai@outlook.com"
+          
+          if git diff --quiet && git diff --staged --quiet; then
+            echo "No changes to sync"
+            exit 0
+          fi
+          
+          git add -A
+          git commit -m "sync: Update posts from ai-reports
+
+Auto-sync by GitHub Actions 🤖"
+          git push

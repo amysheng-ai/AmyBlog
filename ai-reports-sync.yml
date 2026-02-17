@@ -1,0 +1,78 @@
+name: Sync to AmyBlog
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'labs/**'
+      - 'daily/**'
+      - 'topics/**'
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout ai-reports
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Checkout AmyBlog
+        uses: actions/checkout@v4
+        with:
+          repository: amysheng-ai/AmyBlog
+          token: ${{ secrets.SYNC_TOKEN }}
+          path: AmyBlog
+
+      - name: Sync files
+        run: |
+          # Create target directory
+          mkdir -p AmyBlog/src/content/posts
+          
+          # Copy and convert files
+          for file in labs/*.md daily/*.md topics/*.md; do
+            if [ -f "$file" ]; then
+              filename=$(basename "$file")
+              
+              # Check if file has frontmatter
+              if ! head -1 "$file" | grep -q "^---"; then
+                # Add frontmatter
+                title=$(echo "$filename" | sed 's/\.md$//' | sed 's/-/ /g' | sed 's/_/ /g')
+                cat > "AmyBlog/src/content/posts/$filename" << EOF
+---
+title: "$title"
+published: $(date +%Y-%m-%d)
+description: "Research report synced from ai-reports"
+tags: [Research, AI]
+category: Research
+draft: false
+---
+
+$(cat "$file")
+EOF
+              else
+                # Copy as-is (already has frontmatter)
+                cp "$file" "AmyBlog/src/content/posts/"
+              fi
+            fi
+          done
+
+      - name: Commit and push to AmyBlog
+        run: |
+          cd AmyBlog
+          git config user.name "Amy"
+          git config user.email "amysheng.ai@outlook.com"
+          
+          # Check if there are changes
+          if git diff --quiet && git diff --staged --quiet; then
+            echo "No changes to sync"
+            exit 0
+          fi
+          
+          git add -A
+          git commit -m "sync: Update posts from ai-reports
+
+$(git diff --name-only | sed 's/^/- /')
+
+Auto-sync by GitHub Actions 🤖"
+          git push
