@@ -1,8 +1,8 @@
 ---
 title: Daily AI Papers - 2026年3月2日
 published: 2026-03-02
-description: 本期聚焦Agentic RL突破：微软提出EMPO²探索式记忆增强框架，LinkedIn提出ACE非对称置信度惩罚优化RLVR，OPPO提出SMTL长程Agentic搜索新范式；同时关注World Model一致性原则与Omni-Modal原生Agent发展。
-tags: [Daily Papers, AI, Agentic RL, World Models, RLVR, Multi-Modal]
+description: 本期聚焦Agentic RL突破：微软提出EMPO²探索式记忆增强框架，LinkedIn提出ACE非对称置信度惩罚优化RLVR，OPPO提出SMTL长程Agentic搜索新范式；清华/字节提出CUDA Agent实现高性能CUDA内核生成；RLVR领域SCOPE框架回收失败探索样本。同时关注World Model一致性原则、LoRA-Pre低秩优化器（ICLR 2026 Oral）等。
+tags: [Daily Papers, AI, Agentic RL, World Models, RLVR, Multi-Modal, Efficient LLM]
 category: Papers
 draft: false
 ---
@@ -11,7 +11,7 @@ draft: false
 
 ## 今日预览
 
-本期涵盖6篇精选论文，核心亮点包括：**微软**提出EMPO²框架解决LLM Agent的探索瓶颈，通过混合on/off-policy优化实现128.6%的性能提升；**LinkedIn**针对RLVR中的过度自信错误问题，提出ACE非对称置信度惩罚机制；**OPPO**挑战"深度思考"范式，提出"搜索更多、思考更少"的长程Agentic搜索框架；**OpenDataLab**从一致性角度重新定义World Model构建原则；**人大高瓴**推出OmniGAIA原生全模态Agent基准与模型。涵盖Agentic RL、World Models、Reasoning三大核心方向。
+本期涵盖14篇精选论文，核心亮点包括：**微软**提出EMPO²框架解决LLM Agent的探索瓶颈，通过混合on/off-policy优化实现128.6%的性能提升；**LinkedIn**针对RLVR中的过度自信错误问题，提出ACE非对称置信度惩罚机制；**OPPO**挑战"深度思考"范式，提出"搜索更多、思考更少"的长程Agentic搜索框架；**清华/字节**提出CUDA Agent通过大规模Agentic RL实现高性能CUDA内核生成；**RLVR**领域SCOPE框架通过细粒度off-policy修正回收失败探索样本；**LoRA-Pre**作为ICLR 2026 Oral工作，将低秩近似引入优化器状态。涵盖Agentic RL、World Models、RLVR、Efficient LLM四大核心方向。
 
 ---
 
@@ -149,6 +149,133 @@ SMTL在多个long-horizon任务上验证了其效率优势，为构建实用化r
 
 ---
 
+### 7. CUDA Agent: Large-Scale Agentic RL for High-Performance CUDA Kernel Generation
+**作者**: Weinan Dai, Hanlin Wu, Qiying Yu, Huan-ang Gao, Jiahao Li, Chengquan Jiang, Weiqiang Lou, Yufan Song, Hongli Yu, Jiaze Chen, Wei-Ying Ma, Ya-Qin Zhang, Jingjing Liu, Mingxuan Wang, Xin Liu, Hao Zhou 等
+**机构**: 清华大学、字节跳动  
+**链接**: [arXiv:2602.24286](https://arxiv.org/abs/2602.24286) | [代码](https://github.com/cuda-agent/cuda-agent)  
+**方向**: Agentic RL, Code Generation  
+**评级**: ⭐⭐⭐ 必读
+
+**核心创新**:
+CUDA Agent 是一个大规模 Agentic 强化学习系统，专门用于开发 CUDA 内核优化能力。该系统包含三个核心组件：(1) 可扩展的数据合成流水线，自动生成高质量的 CUDA 优化任务；(2) 技能增强的 CUDA 开发环境，集成自动化验证和性能分析，提供可靠的奖励信号；(3) 稳定的强化学习算法技术，支持大规模训练。
+
+与传统依赖训练后精炼或固定多轮反馈循环的方法不同，CUDA Agent 通过 RL 从根本上提升模型的内在 CUDA 优化能力。系统采用端到端的训练方式，使模型能够自主探索高效的并行计算策略。
+
+**实验结果**:
+在 KernelBench 基准测试上，CUDA Agent 取得 SOTA 结果：
+- Level-1: 比 torch.compile 快 **100%**
+- Level-2: 比 torch.compile 快 **100%**
+- Level-3: 比 torch.compile 快 **92%**
+
+在最困难的 Level-3 设置上，CUDA Agent 比 Claude Opus 4.5 和 Gemini 3 Pro 等最强商业模型高出约 **40%** 的性能。
+
+---
+
+### 8. Recycling Failures: Salvaging Exploration in RLVR via Fine-Grained Off-Policy Guidance
+**作者**: Yanwei Ren 等  
+**链接**: [arXiv:2602.24110](https://arxiv.org/abs/2602.24110)  
+**方向**: RLVR, Reasoning  
+**评级**: ⭐⭐⭐ 必读
+
+**核心创新**:
+该论文针对 Reinforcement Learning from Verifiable Rewards (RLVR) 中的探索效率问题，提出 SCOPE (Step-wise Correction for On-Policy Exploration) 框架。标准 RLVR 使用基于结果的监督信号，对所有错误轨迹给予同等惩罚，导致模型丢弃大量部分正确的 rollout，过早缩小探索空间。
+
+SCOPE 的核心思想是利用 Process Reward Models (PRM) 精确定位次优 rollout 中的第一个错误步骤，然后应用细粒度的 off-policy 修正。这种方法能够有效回收部分正确的轨迹，将多样性得分提升 **13.5%**，从而维持广泛的探索空间。
+
+**实验结果**:
+- 数学推理任务平均准确率达 **46.6%**（SOTA）
+- 分布外推理任务准确率 **53.4%**
+- 相比 naive PRM 集成方法，SCOPE 显著提升了样本效率和最终性能
+
+---
+
+### 9. Taming Momentum: Rethinking Optimizer States Through Low-Rank Approximation
+**作者**: Zhengbo Wang 等  
+**链接**: [arXiv:2602.24283](https://arxiv.org/abs/2602.24283) | [代码](https://github.com/mrflogs/LoRA-Pre)  
+**方向**: Efficient LLM, Training Optimization  
+**评级**: ⭐⭐⭐ 必读
+
+**核心创新**:
+该论文提出 LoRA-Pre，一种基于低秩近似的优化器状态压缩方法。作者重新将 Adam 和 Muon 等优化器中使用的指数移动平均 (EMA) 解释为在线梯度流训练的线性回归器，基于此等价关系，LoRA-Pre 将完整的动量矩阵分解为紧凑的低秩子空间。
+
+LoRA-Pre 在保持优化性能的同时显著降低内存占用。与标准 LoRA 相比，LoRA-Pre 在相同秩下展现出显著优势，且仅需 **1/8** 的秩即可达到基线方法的性能水平。
+
+**实验结果**:
+在 Llama 架构模型上从 60M 到 1B 参数的预训练实验中，LoRA-Pre 在所有模型规模上均取得最佳性能。微调场景下：
+- Llama-3.1-8B: 相比标准 LoRA 提升 **3.14** 个点
+- Llama-2-7B: 相比标准 LoRA 提升 **6.17** 个点
+
+该工作已被 **ICLR 2026** 接收为 **Oral** 论文。
+
+---
+
+### 10. RF-Agent: Automated Reward Function Design via Language Agent Tree Search
+**作者**: Ning Gao 等  
+**链接**: [arXiv:2602.23876](https://arxiv.org/abs/2602.23876) | [代码](https://github.com/deng-ai-lab/RF-Agent)  
+**方向**: Agentic RL, Reward Design  
+**评级**: ⭐⭐⭐ 必读
+
+**核心创新**:
+RF-Agent 将奖励函数设计视为序列决策过程，将 LLM 作为语言 Agent，结合 Monte Carlo Tree Search (MCTS) 管理奖励设计和优化流程。该方法充分利用 LLM 的多阶段上下文推理能力，更好地利用历史反馈信息，提高搜索效率以识别有前景的奖励函数。
+
+与传统依赖贪婪或进化算法的方法相比，RF-Agent 通过树搜索有效组织了奖励函数的设计空间，在 17 个不同的低层次控制任务中展现出卓越性能。
+
+**实验结果**:
+在 17 个多样化低层次控制任务上的实验表明，RF-Agent 显著优于现有方法，验证了将 LLM 作为 Agent 进行奖励函数设计的有效性。
+
+---
+
+### 11. A Minimal Agent for Automated Theorem Proving
+**作者**: Leopoldo Sarra 等  
+**链接**: [arXiv:2602.24273](https://arxiv.org/abs/2602.24273)  
+**方向**: Agent, Theorem Proving  
+**评级**: ⭐⭐ 可选
+
+**核心创新**:
+该论文提出了一个极简的 Agentic 基线系统，用于自动定理证明。该系统实现了 SOTA 定理证明器的核心共享特性：迭代证明精炼、库搜索和上下文管理。通过在不同基准上的评估，作者展示了迭代方法相对于多次单样本生成的一致性优势，尤其在样本效率和成本效益方面。
+
+该实现已开源，可作为未来研究的参考基线和社区可用的证明器。
+
+---
+
+### 12. Reasoning-Driven Multimodal LLM for Domain Generalization
+**作者**: Zhipeng Xu 等  
+**链接**: [arXiv:2602.23777](https://arxiv.org/abs/2602.23777)  
+**方向**: Reasoning, Multimodal, Domain Generalization  
+**评级**: ⭐⭐ 可选
+
+**核心创新**:
+RD-MLDG 探索利用多模态大语言模型的推理能力解决领域泛化 (Domain Generalization) 问题。通过构建推理链来推导图像类别，实现更鲁棒的跨域预测。论文提出两个关键组件：(1) MTCT (Multi-Task Cross-Training) 引入直接分类路径引导推理监督；(2) SARR (Self-Aligned Reasoning Regularization) 通过迭代自标记保持推理链的语义丰富性。
+
+**实验结果**:
+在 DomainBed 数据集 (PACS, VLCS, OfficeHome, TerraInc) 上取得 SOTA 性能，证明推理可作为领域泛化的有效补充信号。
+
+---
+
+### 13. DARE-bench: Evaluating Modeling and Instruction Fidelity of LLMs in Data Science
+**作者**: Fan Shu 等  
+**链接**: [arXiv:2602.24288](https://arxiv.org/abs/2602.24288)  
+**方向**: Benchmark, Data Science, RL Training  
+**评级**: ⭐⭐ 可选
+
+**核心创新**:
+DARE-bench 是一个针对数据科学任务的 benchmark，包含 6,300 个 Kaggle 衍生任务，所有任务都具有可验证的真实标签。该 benchmark 不仅用于评估，还提供大规模训练数据。实验证明，使用 DARE-bench 进行监督微调可将 Qwen3-32B 准确率提升 1.83 倍，强化学习可将 Qwen3-4B 准确率提升超过 8 倍。
+
+该工作已被 **ICLR 2026** 接收。
+
+---
+
+### 14. From Flat Logs to Causal Graphs: Hierarchical Failure Attribution for LLM-based Multi-Agent Systems
+**作者**: Wenjie Wu 等  
+**链接**: [arXiv:2602.23701](https://arxiv.org/abs/2602.23701)  
+**方向**: Multi-Agent, Failure Attribution  
+**评级**: ⭐⭐ 可选
+
+**核心创新**:
+CHIEF 框架针对 LLM 多智能体系统的故障归因问题，将执行日志转换为结构化分层因果图。通过分层 oracle 引导回溯和反事实归因，有效区分真正的根本原因和传播症状。在 Who&When 基准上，CHIEF 在 agent-level 和 step-level 准确率上均优于 8 个强基线方法。
+
+---
+
 ## 总结
 
 | 论文 | 主题 | 机构 | 核心贡献 | 评级 |
@@ -156,16 +283,26 @@ SMTL在多个long-horizon任务上验证了其效率优势，为构建实用化r
 | The Trinity of Consistency | World Models | OpenDataLab, Shanghai AI Lab | 一致性三位一体原则，物理约束驱动的世界模型 | ⭐⭐⭐ |
 | EMPO² | Agentic RL | Microsoft | 探索式记忆增强+混合on/off-policy优化 | ⭐⭐⭐ |
 | ACE | RLVR | LinkedIn | 非对称置信度惩罚，解决过度自信错误 | ⭐⭐⭐ |
+| CUDA Agent | Agentic RL + Code Gen | 清华/字节 | 大规模RL训练实现SOTA CUDA内核优化 | ⭐⭐⭐ |
+| Recycling Failures | RLVR | - | SCOPE框架回收部分正确样本，提升探索效率 | ⭐⭐⭐ |
+| LoRA-Pre | Efficient LLM | - | 低秩优化器状态，ICLR 2026 Oral | ⭐⭐⭐ |
+| RF-Agent | Agentic RL + Reward | - | MCTS + LLM Agent自动设计奖励函数 | ⭐⭐⭐ |
 | SMTL | Agentic Search | OPPO | "搜索更多、思考更少"的长程agent范式 | ⭐⭐ |
 | OmniGAIA | Omni-Modal Agents | Renmin University | 原生全模态agent基准与模型 | ⭐⭐ |
 | MobilityBench | Agent Benchmark | Alibaba | 真实场景路线规划agent评测 | ⭐⭐ |
+| Minimal ATP Agent | Agent + Theorem Proving | - | 极简Agent基线，迭代证明精炼 | ⭐⭐ |
+| RD-MLDG | Reasoning + DG | - | 推理驱动的多模态领域泛化 | ⭐⭐ |
+| DARE-bench | Benchmark + RL | - | 数据科学benchmark，支持RL训练 | ⭐⭐ |
+| CHIEF | Multi-Agent | - | 分层因果图故障归因 | ⭐⭐ |
 
 **今日趋势观察**:
 
-1. **Agentic RL进入精细化阶段**: 从早期的"能用"转向"高效+鲁棒"，微软EMPO²和LinkedIn ACE分别从探索策略和错误纠正两个角度切入，体现了对训练稳定性的深度关注。
+1. **Agentic RL进入精细化阶段**: 从早期的"能用"转向"高效+鲁棒"，微软EMPO²和LinkedIn ACE分别从探索策略和错误纠正两个角度切入，体现了对训练稳定性的深度关注。清华/字节的CUDA Agent进一步证明Agentic RL在代码生成领域的巨大潜力。
 
-2. **RLVR的多样化发展**: 除了传统的pass@1优化，研究者开始关注Pass@k全谱系改善（ACE）和长期一致性（Consistency），表明社区已认识到推理多样性的重要性。
+2. **RLVR的多样化发展**: 除了传统的pass@1优化，研究者开始关注Pass@k全谱系改善（ACE）和探索效率提升（SCOPE）。Recycling Failures论文通过细粒度off-policy修正回收部分正确样本，有效缓解探索空间过早收缩问题，与立的研究方向高度相关。
 
-3. **World Models的新定义**: OpenDataLab的工作标志着World Model从纯数据驱动向"数据+物理约束"的范式转变，这对机器人控制和物理仿真具有重要意义。
+3. **训练效率创新获得认可**: LoRA-Pre作为ICLR 2026 Oral工作，通过低秩近似显著降低优化器内存占用，仅需1/8秩即可达到基线性能。在模型规模持续增长的背景下，训练效率优化将持续受到关注。
 
-4. **Agent架构的反思**: OPPO的SMTL和EMPO²都暗示着对传统"深度推理"范式的反思——有时更多的外部检索比内部思考更有效，这与人类解决问题的策略更为接近。
+4. **World Models的新定义**: OpenDataLab的工作标志着World Model从纯数据驱动向"数据+物理约束"的范式转变，这对机器人控制和物理仿真具有重要意义。
+
+5. **Agent架构的反思**: OPPO的SMTL和EMPO²都暗示着对传统"深度推理"范式的反思——有时更多的外部检索比内部思考更有效，这与人类解决问题的策略更为接近。RF-Agent则展示了MCTS与LLM结合在奖励设计中的有效性。
