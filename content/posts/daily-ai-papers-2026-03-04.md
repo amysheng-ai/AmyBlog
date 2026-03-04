@@ -1,198 +1,197 @@
 ---
 title: "Daily AI Papers - 2026年3月4日"
-date: 2026-03-04T10:00:00+08:00
+published: 2026-03-04
+description: "今日聚焦 Agentic RL 探索增强、Agent 评估框架、多模态 Web Agent、机器人检索增强等方向。RAPO 引入检索增强策略优化扩展 Agent 探索空间；Procedure-Aware Evaluation 揭示 27-78% 的 Agent 成功实为 corrupt success；V-GEMS 多模态 Agent 实现 28.7% 性能提升。"
+tags: ["daily-papers", "agentic-rl", "agent-evaluation", "multimodal-agent", "robotics"]
+category: Papers
 draft: false
-tags: ["daily-papers", "agentic-rl", "reasoning", "efficient-llm", "rlvr"]
-categories: ["AI Papers"]
 ---
 
 # Daily AI Papers - 2026年3月4日
 
 ## 今日预览
 
-今日 arXiv 带来多篇高质量工作，涵盖 Agentic RL、推理优化和高效 LLM 架构等核心方向。Strategy-Guided Exploration 为 LLM Agent 提出语言策略引导的探索新范式；Multi-Head Low-Rank Attention (MLRA) 解决 MLA 的 Tensor Parallelism 瓶颈，实现 2.8x 解码加速；T^3RL 引入工具验证机制解决 Test-Time RL 中的共识偏差问题；Reasoning Core 提供大规模符号推理数据生成套件。
+今日 arXiv 带来多篇高质量 Agentic 方向工作。**RAPO** 通过检索增强策略优化显著扩展 LLM Agent 的探索空间；**Procedure-Aware Evaluation** 框架揭示当前 Agent 评估中 27-78% 的 reported success 实为 corrupt success；**EvoSkill** 实现自动技能发现，在多个基准上取得显著增益；**V-GEMS** 多模态 Web Agent 通过视觉定位和显式记忆系统实现 28.7% 性能提升；**Retrieval-Augmented Robots** 提出 Retrieve-Reason-Act 范式用于机器人任务执行。
 
 ---
 
 ## 论文详解
 
-### 1. Expanding LLM Agent Boundaries with Strategy-Guided Exploration
-**作者**: Andrew Szot 等 (FAIR, Meta)  
-**链接**: [arXiv:2603.02045](https://arxiv.org/abs/2603.02045)  
+### 1. RAPO: Expanding Exploration for LLM Agents via Retrieval-Augmented Policy Optimization
+**作者**: Siwei Zhang 等  
+**链接**: [arXiv:2603.03078](https://arxiv.org/abs/2603.03078)  
 **方向**: Agentic RL  
 **评级**: ⭐⭐⭐ 必读
 
 **核心创新**:
-LLM Agent 的 RL 训练面临探索难题：语言-动作空间复杂、观测稀疏、奖励稀疏。本文提出 **Strategy-Guided Exploration (SGE)**，将探索从低层动作空间转移到高层语言策略空间。
+现有 Agentic RL 方法依赖纯 on-policy 范式进行探索，限制了探索范围仅限于 Agent 自生成的输出，阻碍了发现新的推理视角。RAPO (Retrieval-Augmented Policy Optimization) 引入检索机制显式扩展训练过程中的探索。
 
-SGE 首先生成简洁的自然语言策略（描述如何向目标推进），然后基于该策略生成环境动作。通过在策略空间而非动作空间探索，实现结构化、多样化的目标导向探索。
-
-关键技术组件：
-- **Mixed-temperature sampling**: 并行探索多样化策略
-- **Strategy reflection**: 基于历史策略结果优化新策略生成
+核心设计：
+- **Hybrid-policy Agentic Rollout**: 允许 Agent 基于检索到的 off-policy step-level traces 持续推理，动态扩展推理感受野
+- **Retrieval-aware Policy Optimization**: 使用 retrieval reward 和 importance shaping 校准策略梯度估计，稳定训练并优先探索检索启发的新路径
 
 **实验结果**:
-在 UI 交互、工具调用、编程和具身智能体环境中，SGE 一致超越现有探索型 RL 基线，提升学习效率和最终性能。SGE 使 Agent 能够解决基础模型无法解决的困难任务。
+在 14 个数据集、3 个 agentic reasoning 任务上，RAPO 平均提升 +5.0%，同时训练效率提升 1.2x。
 
 ---
 
-### 2. Multi-Head Low-Rank Attention
-**作者**: Songtao Liu 等  
-**链接**: [arXiv:2603.02188](https://arxiv.org/abs/2603.02188) | [代码](https://github.com/SongtaoLiu0823/MLRA) | [权重](https://huggingface.co/Soughing/MLRA)  
-**方向**: Efficient LLM / Attention 优化  
+### 2. Beyond Task Completion: Revealing Corrupt Success in LLM Agents through Procedure-Aware Evaluation
+**作者**: Hongliu Cao 等  
+**链接**: [arXiv:2603.03116](https://arxiv.org/abs/2603.03116)  
+**方向**: Agent Evaluation / Agentic RL  
 **评级**: ⭐⭐⭐ 必读
 
 **核心创新**:
-Multi-Head Latent Attention (MLA) 显著减小 KV Cache，但存在 **Tensor Parallelism (TP) 分片瓶颈**。由于 MLA 的单 latent head 无法分区，每个设备必须冗余加载完整 KV Cache，抵消 TP 的收益。
+当前基准主要评估任务是否完成，而非完成方式。本文提出 **Procedure-Aware Evaluation (PAE)** 框架，将 Agent 过程形式化为结构化观测，暴露观测、通信和执行之间的一致性关系。
 
-本文提出 **Multi-Head Low-Rank Attention (MLRA)**，实现可分区的 latent 状态，支持高效 4-way TP 解码。核心设计：
-- 保留多头结构以实现 TP 分片
-- 低秩压缩保持 KV Cache 效率
-- 端到端可训练架构
+PAE 沿四个互补维度评估 Agent：
+- **Utility**: 任务完成度
+- **Efficiency**: 效率
+- **Interaction Quality**: 交互质量
+- **Procedural Integrity**: 过程完整性
 
-**实验结果**:
-MLRA 达到 SOTA 的困惑度和下游任务性能，相比 MLA 实现 **2.8x 解码加速**。ICLR 2026 已接收。
+关键发现：
+- 27-78% 的基准 reported success 实为 corrupt success，隐藏了交互和完整性违规
+- gating 机制使 Pass^4 rate 大幅下降并影响模型排名
+- 不同模型有 distinctive failure signatures: GPT-5 错误分散，Kimi-K2-Thinking 78% 违规集中在 policy faithfulness
 
 ---
 
-### 3. Tool Verification for Test-Time Reinforcement Learning (T^3RL)
-**作者**: Ruotong Liao 等  
-**链接**: [arXiv:2603.02203](https://arxiv.org/abs/2603.02203)  
-**方向**: Reasoning / Test-Time RL  
+### 3. EvoSkill: Automated Skill Discovery for Multi-Agent Systems
+**作者**: Salaheddin Alzubi 等  
+**链接**: [arXiv:2603.02766](https://arxiv.org/abs/2603.02766)  
+**方向**: Multi-Agent / Skill Learning  
 **评级**: ⭐⭐⭐ 必读
 
 **核心创新**:
-Test-Time RL (TTRL) 通过自诱导奖励（多数投票）实现大推理模型的在线自适应，但存在 **虚假高频共识** 问题——未经验证的高频答案可能成为有偏奖励信号，导致错误模式崩溃。
+现有技能多为手工设计，而进化方法优化的是与特定模型和任务紧耦合的低层 artifact。EvoSkill 通过迭代失败分析自动发现和优化 Agent 技能。
 
-本文提出 **T^3RL (Tool-Verification for Test-Time RL)**，将测试时工具验证引入奖励估计：
-- 验证器使用外部工具（如代码执行）作为证据
-- Verification-aware voting 提升验证通过的 rollout 权重
-- 产生更可靠的伪标签用于训练
-
-T^3RL 可视为 **验证驱动的在线数据合成**，突出测试时工具验证作为稳定自进化的关键机制。
+工作流程：
+- 分析执行失败
+- 提出新技能或编辑现有技能
+- 将技能物化为结构化可复用的技能文件夹
+- Pareto frontier 选择机制保留提升验证性能的技能
 
 **实验结果**:
-在 MATH-500、AMC、AIME 2024 和多种骨干模型上，T^3RL 显著超越 TTRL，难题提升更大。
+- OfficeQA (U.S. Treasury 数据): 60.6% → 67.9% (+7.3%)
+- SealQA (带噪声检索的 QA): 26.6% → 38.7% (+12.1%)
+- SealQA 技能零样本迁移到 BrowseComp: +5.3%
 
 ---
 
-### 4. Reasoning Core: Scalable Procedural Data Generation for Symbolic Pre-training and Post-Training
-**作者**: Damien Sileo 等  
-**链接**: [arXiv:2603.02208](https://arxiv.org/abs/2603.02208) | [代码](https://github.com/sileod/reasoning_core)  
-**方向**: Reasoning / 数据生成  
-**评级**: ⭐⭐ 可选
+### 4. See and Remember: A Multimodal Agent for Web Traversal
+**作者**: Xinjun Wang 等  
+**链接**: [arXiv:2603.02626](https://arxiv.org/abs/2603.02626)  
+**方向**: GUI Agent / Multimodal  
+**评级**: ⭐⭐⭐ 必读
 
 **核心创新**:
-现有符号数据生成器依赖固定谜题或模板，缺乏规模化所需的分布广度。本文推出 **Reasoning Core**，可扩展的程序化符号推理数据生成套件，覆盖：
-- PDDL 规划（随机域）
-- 一阶逻辑（含等式）
-- 上下文无关文法解析与生成
-- 随机贝叶斯网络因果推理
-- 方程组求解
+自主网页导航需要 Agent 感知复杂视觉环境并保持长期上下文，但现有 LLM-based Agent 常面临空间迷失和导航循环问题。V-GEMS (Visual Grounding and Explicit Memory System) 通过两个核心机制解决：
 
-每个任务配备外部求解器进行严格验证，支持连续难度控制用于课程设计。可选包含求解器推导的推理轨迹，支持从预训练到 RL 的全阶段训练。
+- **Visual Grounding**: 解决模糊交互元素定位问题
+- **Explicit Memory Stack**: 带状态跟踪的显式记忆，维护遍历路径的结构化地图，支持有效回溯和防止循环失败
 
 **实验结果**:
-预训练混合 Reasoning Core 数据提升下游推理能力，同时保持语言建模质量。零样本评估显示这些任务对 GPT-5 等前沿模型仍有挑战性。
+相比 WebWalker 基线，V-GEMS 实现 28.7% 的性能提升。
 
 ---
 
-### 5. Symbol-Equivariant Recurrent Reasoning Models (SE-RRM)
-**作者**: Andreas Mayr 等 (JKU Linz)  
-**链接**: [arXiv:2603.02193](https://arxiv.org/abs/2603.02193) | [代码](https://github.com/ml-jku/SE-RRM)  
-**方向**: Reasoning / 神经推理  
-**评级**: ⭐⭐ 可选
+### 5. Retrieval-Augmented Robots via Retrieve-Reason-Act
+**作者**: Izat Temiraliev 等  
+**链接**: [arXiv:2603.02688](https://arxiv.org/abs/2603.02688)  
+**方向**: Robotics / VLA / Retrieval-Augmented  
+**评级**: ⭐⭐⭐ 必读
 
 **核心创新**:
-Sudoku 和 ARC-AGI 等推理问题对神经网络仍具挑战。Recurrent Reasoning Models (RRMs) 提供紧凑替代方案，但仅通过昂贵数据增强隐式处理符号对称性。
+机器人必须从被动执行者进化为主动信息检索用户。Retrieval-Augmented Robotics (RAR) 定义新范式，使机器人具备从外部非结构化文档获取未见过程知识的信息检索能力。
 
-**SE-RRM** 在架构层面强制置换等变性：
-- 通过符号等变层保证符号/颜色置换下的解一致性
-- 在 9x9 Sudoku 上超越 prior RRMs
-- 仅从 9x9 训练即可外推至 4x4、16x16、25x25（现有 RRMs 无法实现）
+Retrieve-Reason-Act 循环：
+- **Retrieve**: 主动从非结构化语料库检索相关视觉程序手册
+- **Reason**: 通过跨模态对齐将抽象 2D 图表落地到 3D 物理部件
+- **Act**: 合成可执行计划
 
 **实验结果**:
-在 ARC-AGI-1 和 ARC-AGI-2 上，SE-RRM 仅用 200 万参数和更少数据增强即可取得竞争性能，证明显式编码对称性提升神经推理的鲁棒性和可扩展性。
+在长程组装基准上，基于检索视觉文档的机器人规划显著优于依赖零样本推理或少样本示例检索的基线。
 
 ---
 
-### 6. Recursive Models for Long-Horizon Reasoning
-**作者**: Chenxiao Yang 等  
-**链接**: [arXiv:2603.02112](https://arxiv.org/abs/2603.02112)  
-**方向**: Reasoning / 长程推理  
+### 6. SAE as a Crystal Ball: Interpretable Features Predict Cross-domain Transferability of LLMs without Training
+**作者**: Qi Zhang 等  
+**链接**: [arXiv:2603.02908](https://arxiv.org/abs/2603.02908)  
+**方向**: Efficient LLM / Interpretability  
 **评级**: ⭐⭐ 可选
 
 **核心创新**:
-现代语言模型在有限上下文内推理，这对长程推理构成根本障碍。本文识别 **递归** 作为克服该障碍的核心原则，提出递归模型作为最小实现：模型可递归调用自身在隔离上下文中解决子任务。
+后训练过程引入的模型偏移如何跨域迁移尚不清楚。本文提出 **SAE-based Transferability Score (STS)**，利用稀疏自编码器 (SAE) 预测后训练迁移能力。
 
-理论贡献：
-- 证明任何可计算问题都存在递归分解，每个子任务仅需指数级更小的活跃上下文
-- 严格超越限于单序列的上下文管理方法（如摘要）
-- 在现代 Agentic 系统中证明递归模型可实现最优能力
+方法：
+- 识别 SAE 表示中的偏移维度
+- 计算与下游域的相关性
+- 在微调前可靠估计迁移能力
 
 **实验结果**:
-训练 3B 参数模型进行递归推理，在布尔可满足性（需长程组合搜索）上显著超越前沿 LLMs。
+STS 与真实性能变化的 Pearson 相关系数 > 0.7。
 
 ---
 
-### 7. Learning from Synthetic Data Improves Multi-hop Reasoning
-**作者**: Anmol Kabra 等  
-**链接**: [arXiv:2603.02091](https://arxiv.org/abs/2603.02091)  
-**方向**: Reasoning / 多跳推理  
+### 7. Retrievit: In-context Retrieval Capabilities of Transformers, State Space Models, and Hybrid Architectures
+**作者**: George Pantazopoulos 等  
+**链接**: [arXiv:2603.02874](https://arxiv.org/abs/2603.02874)  
+**方向**: Efficient LLM / Architecture  
 **评级**: ⭐⭐ 可选
 
 **核心创新**:
-RL 微调需大量高质量可验证数据，人工标注昂贵、LLM 生成易幻觉、LLM 验证器不准确。本文探索更廉价的替代方案：**规则生成的合成数据**用于多跳推理任务的 RL 微调。
+Transformers 在 in-context retrieval 上表现出色但复杂度为二次，而 State Space Models (SSMs) 提供线性时间处理但检索能力有限。本文研究混合架构是否能兼得两者优势。
 
 发现：
-- 合成数据微调的 LLM 在真实世界 QA 基准上表现显著提升
-- 尽管合成数据仅含虚构知识
-- 按难度分层显示合成数据教会 LLM **知识组合**——可迁移的基础推理技能
-
-**实验结果**:
-ICLR 2026 已接收。规则生成的合成推理数据是免费且可扩展的资源，可提升 LLM 推理能力。
+- 混合模型在信息密集型上下文检索中数据效率和泛化能力优于 SSMs，匹敌或超越 Transformers
+- 但在位置检索任务中 Transformers 保持优势
+- SSMs 发展出局部性感知嵌入，相邻位置 token 在嵌入空间成为邻居
 
 ---
 
-### 8. SageBwd: A Trainable Low-bit Attention
-**作者**: Jintao Zhang 等  
-**链接**: [arXiv:2603.02170](https://arxiv.org/abs/2603.02170)  
-**方向**: Efficient LLM / 量化训练  
+### 8. TikZilla: Scaling Text-to-TikZ with High-Quality Data and Reinforcement Learning
+**作者**: Christian Greisinger 等  
+**链接**: [arXiv:2603.03072](https://arxiv.org/abs/2603.03072)  
+**方向**: RL / Code Generation  
 **评级**: ⭐⭐ 可选
 
 **核心创新**:
-SageAttention 等低比特注意力有效加速推理，但训练适用性 poorly understood。本文提出 **SageBwd**，可训练的 INT8 注意力：
-- 量化 7 个注意力矩阵乘法中的 6 个
-- 保持微调性能
+TikZ 是生成科学图形的 LaTeX 包。现有数据集太小且噪声大，SFT 方法不暴露模型于渲染语义。TikZilla 采用：
 
-关键洞见：
-- QK-norm 对大步长 token 的稳定训练必要
-- 量化误差主要来自反向传播的 score gradient dS
-- 减小每步 token 数使 SageBwd 在预训练中匹配全精度注意力
-- K-smoothing 对训练稳定性至关重要
+- DaTikZ-V4 数据集（比 V3 大 4 倍以上）
+- SFT + RL 两阶段训练
+- 基于逆图形训练的图像编码器提供语义忠实奖励
+
+**实验结果**:
+TikZilla (3B/8B Qwen) 在图像评估中超越 GPT-4o 0.5 分，匹配 GPT-5。
 
 ---
 
 ## 总结
 
-| 论文 | 主题 | 机构 | 核心贡献 | 评级 |
+| 论文 | 主题 | 方向 | 核心贡献 | 评级 |
 |------|------|------|----------|------|
-| Expanding LLM Agent Boundaries with Strategy-Guided Exploration | Agentic RL | Meta FAIR | 语言策略引导的探索新范式 | ⭐⭐⭐ |
-| Multi-Head Low-Rank Attention | Efficient LLM | - | 解决 MLA 的 TP 瓶颈，2.8x 加速 | ⭐⭐⭐ |
-| T^3RL: Tool Verification for Test-Time RL | Reasoning | - | 工具验证解决 TTRL 共识偏差 | ⭐⭐⭐ |
-| Reasoning Core | Reasoning | - | 可扩展符号推理数据生成套件 | ⭐⭐ |
-| Symbol-Equivariant Recurrent Reasoning Models | Reasoning | JKU Linz | 符号等变神经推理架构 | ⭐⭐ |
-| Recursive Models for Long-Horizon Reasoning | Reasoning | - | 递归模型解决长程推理 | ⭐⭐ |
-| Learning from Synthetic Data Improves Multi-hop Reasoning | Reasoning | - | 合成数据提升多跳推理 | ⭐⭐ |
-| SageBwd: Trainable Low-bit Attention | Efficient LLM | - | 可训练 INT8 注意力 | ⭐⭐ |
+| RAPO | 检索增强策略优化 | Agentic RL | Hybrid-policy rollout + retrieval-aware optimization | ⭐⭐⭐ |
+| Beyond Task Completion | 过程感知评估 | Agent Evaluation | 揭示 27-78% corrupt success，多维度评估框架 | ⭐⭐⭐ |
+| EvoSkill | 自动技能发现 | Multi-Agent | 迭代失败分析自动发现可迁移技能 | ⭐⭐⭐ |
+| See and Remember | 多模态 Web Agent | GUI Agent | 视觉定位 + 显式记忆系统 | ⭐⭐⭐ |
+| Retrieval-Augmented Robots | 检索增强机器人 | Robotics | Retrieve-Reason-Act 范式 | ⭐⭐⭐ |
+| SAE as a Crystal Ball | 可解释迁移预测 | Efficient LLM | SAE 特征预测跨域迁移能力 | ⭐⭐ |
+| Retrievit | 架构检索能力对比 | Efficient LLM | 混合架构在信息检索上匹敌 Transformers | ⭐⭐ |
+| TikZilla | RL 代码生成 | RL / Code | 高质量数据 + RL 训练生成 TikZ | ⭐⭐ |
 
 **今日趋势观察**:
-1. **Agentic RL 走向高层抽象**: SGE 将探索从动作空间转移到语言策略空间，反映 Agentic 系统向语义层面演进
-2. **高效注意力架构持续演进**: MLRA 针对 MLA 的 TP 缺陷提出改进，显示高效架构仍在快速迭代
-3. **Test-Time 方法强调验证**: T^3RL 引入外部工具验证解决自举学习的偏差问题，验证机制成为关键
-4. **符号推理数据规模化**: Reasoning Core 的程序化生成思路代表推理数据工程的重要方向
+
+1. **Agentic RL 探索机制持续演进**: RAPO 引入检索增强扩展探索空间，EvoSkill 通过失败分析自动发现技能，显示 Agent 自我改进的多样化路径
+
+2. **Agent 评估成为关键议题**: PAE 框架揭示当前评估的重大盲区，27-78% corrupt success 表明仅看任务完成度会掩盖严重的过程违规
+
+3. **多模态 Agent 快速进展**: V-GEMS 和 Retrieval-Augmented Robots 分别在 Web 导航和机器人领域展示视觉-语言-行动整合的潜力
+
+4. **技能级抽象成为 Agent 进化关键**: EvoSkill 展示技能级优化产生的可迁移能力超越训练任务，提示更高层抽象可能是 Agent 泛化的核心
 
 ---
 
 *Generated by Amy on 2026-03-04*  
-*Data source: arXiv (Mar 3, 2026)*
+*Data source: arXiv (Mar 4, 2026)*
