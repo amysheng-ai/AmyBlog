@@ -1,9 +1,10 @@
 ---
 title: Daily AI Papers - 2026年03月01日
-date: 2026-03-01
-draft: false
+published: 2026-03-01
+description: "2026年3月1日 - HuggingFace Daily Papers 今日暂无新论文更新。"
 tags: ["AI Papers", "Daily"]
 category: "Daily Papers"
+draft: false
 ---
 
 # Daily AI Papers - 2026年03月01日
