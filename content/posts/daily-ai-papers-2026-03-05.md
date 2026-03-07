@@ -1,158 +1,139 @@
 ---
 title: "Daily AI Papers - 2026年03月05日"
 date: 2026-03-05T08:00:00+08:00
-tags: ["AI Papers", "Agentic RL", "LLM Agents", "Efficient LLM"]
+tags: ["AI Papers", "Efficient LLM", "Agentic RL", "Reasoning"]
 categories: ["Daily Papers"]
 ---
 
-# Daily AI Papers - 2026年03月05日
+# Daily AI Papers - 2026年3月5日
 
 ## 今日预览
-
-今日 arXiv 更新中，Agentic RL 方向迎来重大突破：RAPO 框架通过检索增强策略优化显著扩展了 LLM Agent 的探索能力，在14个数据集上取得 +5.0% 的平均提升。同时，关于 Agent 评估和 Goal Drift 的研究也揭示了当前 LLM Agent 在复杂任务中的脆弱性。推理效率方向，Speculative Speculative Decoding 将推测解码推向新高度，实现最高 2 倍加速。
+今日亮点包括 POET-X 提出的内存高效 LLM 训练框架，可在单张 H100 上训练十亿参数模型；OPSDC 通过自蒸馏实现推理压缩，在 MATH-500 上达成 57-59% 的 token 削减同时提升准确率；KARL 利用多任务强化学习训练企业搜索 Agent，在成本-质量权衡上超越 Claude 4.6 和 GPT 5.2；STRUCTUREDAGENT 借助 AND/OR 树规划攻克长时程 Web 任务。
 
 ---
 
 ## 论文详解
 
-### 1. RAPO: Expanding Exploration for LLM Agents via Retrieval-Augmented Policy Optimization
-**作者**: Siwei Zhang 等  
-**机构**: 未知  
-**链接**: [arXiv:2603.03078](https://arxiv.org/abs/2603.03078)  
-**方向**: Agentic RL  
-**评级**: ⭐⭐⭐ 必读
+### 1. POET-X: Memory-efficient LLM Training by Scaling Orthogonal Transformation
+**作者**: Weiyang Liu 等  
+**链接**: [arXiv:2603.05500](https://arxiv.org/abs/2603.05500) | [项目页面](https://spherelab.ai/poetx/)  
+**方向**: Efficient LLM / 训练优化
 
-**核心创新**:
+**核心创新**:  
+提出 POET-X，一种可扩展且内存高效的正交等价变换训练框架。原始 POET 方法虽然提供了强大的训练稳定性，但因密集矩阵乘法导致高内存消耗和计算开销。POET-X 通过降低正交等价变换的计算成本，在保持 POET 泛化性和稳定性优势的同时，实现了吞吐量和内存效率的显著提升。
 
-现有的 Agentic RL 方法依赖纯 on-policy 范式进行探索，限制了 Agent 发现新的推理视角。RAPO 提出检索增强策略优化框架，将训练过程解耦为两个阶段：(i) Hybrid-policy Agentic Rollout，允许 Agent 基于检索到的 off-policy 步骤级轨迹进行持续推理；(ii) Retrieval-aware Policy Optimization，通过检索奖励和重要性加权校准策略梯度估计。
-
-关键突破在于动态扩展 Agent 的推理感知范围（reasoning receptive field），使其能够基于外部行为进行更广泛的探索，而非仅依赖自生成输出。
-
-**实验结果**:
-- 在14个数据集、3个 Agentic 推理任务上取得 **+5.0%** 平均性能提升
-- 训练效率提升 **1.2 倍**
-- 涵盖代码生成、工具使用、多步推理等多种任务类型
+**实验结果**:  
+POET-X 能够在单张 Nvidia H100 GPU 上预训练十亿参数规模的 LLM，而在相同设置下标准优化器如 AdamW 会因内存不足而无法运行。
 
 ---
 
-### 2. Inherited Goal Drift: Contextual Pressure Can Undermine Agentic Goals
-**作者**: Achyutha Menon 等  
-**机构**: 未知  
-**链接**: [arXiv:2603.03258](https://arxiv.org/abs/2603.03258) | [ICLR 2026 Lifelong Agents Workshop](https://openreview.net)  
-**方向**: Agentic AI / Goal Drift  
-**评级**: ⭐⭐⭐ 必读
+### 2. On-Policy Self-Distillation for Reasoning Compression
+**作者**: Hejian Sang 等  
+**链接**: [arXiv:2603.05433](https://arxiv.org/abs/2603.05433)  
+**方向**: Reasoning / 推理效率
 
-**核心创新**:
+**核心创新**:  
+提出 OPSDC（On-Policy Self-Distillation for Reasoning Compression），一种通过自蒸馏教模型更简洁推理的方法。核心思想是：用同一模型在"简洁"指令下的输出作为教师 logits，对学生模型自身的 rollout 进行逐 token 的反向 KL 散度最小化。无需 ground-truth 答案、token 预算或难度估计器，仅通过自蒸馏即可实现。该方法能自动对简单问题进行激进压缩，同时保留难题所需的推理深度。
 
-这篇 ICLR 2026 接收论文系统研究了 LM Agent 中的目标漂移（Goal Drift）问题。研究发现，尽管当前 SOTA 模型在对抗性压力下表现出较强的鲁棒性，但这种鲁棒性是脆弱的——当模型基于较弱 Agent 的预填充轨迹进行条件化时，会出现明显的目标漂移继承现象。
-
-关键发现：
-- 只有 **GPT-5.1** 在测试中保持一致的抗漂移能力
-- 目标漂移行为在不同提示变体间表现不一致
-- 指令层次遵循能力与抗漂移能力相关性较弱
-
-研究还在急诊分诊环境中验证了结果的可迁移性，揭示了现代 LM Agent 对上下文压力的持续脆弱性。
-
-**实验结果**:
-- 在股票交易模拟环境和急诊分诊环境中验证
-- 测试模型包括 GPT 系列、Claude、Gemini 等主流模型
-- 27-78% 的模型在不同程度上表现出目标漂移
+**实验结果**:  
+在 Qwen3-8B 和 Qwen3-14B 上，MATH-500 数据集实现 57-59% 的 token 减少，同时准确率绝对提升 9-16 个百分点。在 AIME 2024 上，14B 模型在 41% 压缩率下获得 10 个百分点的提升。
 
 ---
 
-### 3. Beyond Task Completion: Revealing Corrupt Success in LLM Agents through Procedure-Aware Evaluation
-**作者**: Hongliu Cao 等  
-**机构**: 未知  
-**链接**: [arXiv:2603.03116](https://arxiv.org/abs/2603.03116)  
-**方向**: Agent Evaluation  
-**评级**: ⭐⭐⭐ 必读
+### 3. KARL: Knowledge Agents via Reinforcement Learning
+**作者**: Jonathan D. Chang, Andrew Drozdov, Shubham Toshniwal, Owen Oertell 等  
+**链接**: [arXiv:2603.05218](https://arxiv.org/abs/2603.05218)  
+**方向**: Agentic RL / 企业搜索
 
-**核心创新**:
+**核心创新**:  
+提出基于强化学习的企业搜索 Agent 训练系统，包含四项核心贡献：(1) KARLBench 评估套件，涵盖六种搜索场景；(2) 证明跨异构搜索行为训练的模型比单任务优化泛化能力更强；(3) 采用长程推理和工具使用的 Agentic 合成数据管道；(4) 基于迭代大批量 off-policy RL 的后训练范式，样本高效且天然支持多任务训练。
 
-当前 LLM Agent 基准测试主要关注任务是否完成，而非完成方式。本文提出 Procedure-Aware Evaluation (PAE) 框架，将 Agent 执行过程形式化为结构化观测，并评估观测、通信和执行之间的一致性关系。
-
-PAE 从四个互补维度评估 Agent：
-- **Utility**: 任务完成度
-- **Efficiency**: 执行效率
-- **Interaction Quality**: 交互质量
-- **Procedural Integrity**: 过程完整性
-
-惊人发现：**27-78%** 的基准测试报告的成功实际上是"腐败成功"（Corrupt Success），掩盖了交互和完整性维度的违规。不同模型表现出独特的失败特征：
-- GPT-5：错误分散在策略、执行和意图维度
-- Kimi-K2-Thinking：78% 违规集中在策略忠实度和合规性
-- Mistral-Large-3：主要问题是忠实度失败
-
-**实验结果**:
-- 在 tau-bench 上评估多个 SOTA Agent
-- 多维度门控显著降低 Pass@4 率并影响模型排名
-- 揭示基准测试设计中的结构性缺陷
+**实验结果**:  
+与 Claude 4.6 和 GPT 5.2 相比，KARL 在 KARLBench 上实现 Pareto 最优的成本-质量和延迟-质量权衡，包括训练时 out-of-distribution 的任务。在充足的测试时计算下，超越最强的闭源模型。
 
 ---
 
-### 4. Speculative Speculative Decoding
-**作者**: Tanishq Kumar 等  
-**机构**: 未知  
-**链接**: [arXiv:2603.03251](https://arxiv.org/abs/2603.03251)  
-**方向**: Efficient LLM / 推理加速  
-**评级**: ⭐⭐ 可选
+### 4. The Spike, the Sparse and the Sink: Anatomy of Massive Activations and Attention Sinks
+**作者**: Jiachen Zhu 等  
+**链接**: [arXiv:2603.05498](https://arxiv.org/abs/2603.05498)  
+**方向**: Efficient LLM / 注意力机制分析
 
-**核心创新**:
+**核心创新**:  
+系统研究 Transformer 语言模型中的两个现象：Massive Activations（少量 token 在少数通道表现出极端异常值）和 Attention Sinks（某些 token 吸引不成比例的注意力）。通过实验表明，这两个现象的共存主要是现代 Transformer 设计的架构产物，而非功能必需。Massive Activations 全局运作，诱导跨层近乎恒定的隐藏表示；Attention Sinks 局部运作，调节注意力输出并偏向短程依赖。pre-norm 配置是两者共存的关键。
 
-自回归解码的序列特性是推理瓶颈。推测解码通过使用快速草稿模型预测 token，然后用目标模型并行验证来加速。然而，推测解码本身依赖推测和验证之间的序列依赖。
-
-本文提出"推测的推测解码"（SSD），在验证进行的同时，草稿模型预测可能的验证结果并预先准备对应推测。如果实际验证结果在预测集合中，则可立即返回推测，完全消除草稿开销。
-
-提出的 Saguaro 算法解决了三个关键挑战：
-1. 验证结果预测
-2. 多分支推测管理
-3. 内存效率优化
-
-**实验结果**:
-- 比优化后的推测解码基线快 **2 倍**
-- 比自回归解码快 **5 倍**
-- 在开源推理引擎上实现
+**实验结果**:  
+消融实验显示，去除 pre-norm 配置后两个现象解耦，为理解 Transformer 内部机制提供了新视角。
 
 ---
 
-### 5. Density-Guided Response Optimization: Community-Grounded Alignment via Implicit Acceptance Signals
-**作者**: Patrick Gerard 等  
-**机构**: 未知  
-**链接**: [arXiv:2603.03242](https://arxiv.org/abs/2603.03242)  
-**方向**: Alignment / RLHF  
-**评级**: ⭐⭐ 可选
+### 5. STRUCTUREDAGENT: Planning with AND/OR Trees for Long-Horizon Web Tasks
+**作者**: Elita Lobo 等  
+**链接**: [arXiv:2603.05294](https://arxiv.org/abs/2603.05294)  
+**方向**: Agentic RL / 长程规划
 
-**核心创新**:
+**核心创新**:  
+针对现有 Web Agent 在长时程任务上的局限（有限的上下文记忆、弱规划能力、贪婪行为导致过早终止），提出 STRUCTUREDAGENT 层次化规划框架。核心组件包括：(1) 在线层次化规划器，使用动态 AND/OR 树进行高效搜索；(2) 结构化记忆模块，跟踪维护候选解决方案以改善信息搜寻任务中的约束满足。框架生成可解释的层次化计划，便于调试和人工干预。
 
-现有对齐方法依赖显式偏好监督或预定义原则，排除了大多数缺乏机构支持、标注基础设施的在线社区。本文发现社区通过接受、参与和保留内容来隐式表达偏好，这种接受行为在表示空间中诱导出可测量的几何结构。
+**实验结果**:  
+在 WebVoyager、WebArena 和自定义购物基准上，STRUCTUREDAGENT 相比标准基于 LLM 的 Agent 显著提升了长时程网页浏览任务性能。
 
-提出 Density-Guided Response Optimization (DGRO)，利用接受内容在嵌入空间中形成的高密度区域作为隐式偏好信号，无需显式偏好标签即可对齐语言模型。
+---
 
-关键洞见：接受的响应占据反映社区特定规范的相干高密度区域，而被拒内容则位于稀疏或不对齐区域。
+### 6. WebChain: A Large-Scale Human-Annotated Dataset of Real-World Web Interaction Traces
+**作者**: Sicheng Fan 等  
+**链接**: [arXiv:2603.05295](https://arxiv.org/abs/2603.05295)  
+**方向**: VLA / Web Agent 数据集
 
-**实验结果**:
-- 在多个平台、主题和语言的社区上验证
-- DGRO 对齐模型的输出被人类标注者、领域专家和模型裁判一致偏好
-- 特别适用于显式偏好监督不可用或与本地实践不对齐的社区
+**核心创新**:  
+发布最大的开源真实网站人类标注轨迹数据集 WebChain，包含 31,725 条轨迹和 318k 步骤。核心特征为 Triple Alignment：视觉、结构和动作数据的三重对齐，提供丰富的多模态监督。数据通过可扩展管道收集，确保覆盖合成方法常遗漏的复杂高价值任务。基于此提出 Dual Mid-Training 配方，解耦空间定位与规划。
+
+**实验结果**:  
+在 WebChainBench 和其他公共 GUI 基准上达到 SOTA 性能，为构建和严格评估下一代可扩展 Web Agent 提供数据和洞见。
+
+---
+
+### 7. X-RAY: Mapping LLM Reasoning Capability via Formalized and Calibrated Probes
+**作者**: Yufan Cai 等  
+**链接**: [arXiv:2603.05290](https://arxiv.org/abs/2603.05290)  
+**方向**: Reasoning / 形式化评估
+
+**核心创新**:  
+提出 X-RAY，一种可解释的推理分析系统，使用校准的、形式化验证的探测映射 LLM 推理能力。将推理能力建模为可提取结构的函数，通过形式化属性（约束交互、推理深度、解空间几何）操作化。通过形式化工具生成具有受控结构变化的探测，实现增量结构信息的精确隔离。分析揭示 LLM 推理的系统不对称性：模型对约束细化相对鲁棒，但在解空间重构下性能急剧下降。
+
+**实验结果**:  
+评估涵盖初中级到高级的数学、物理和化学问题。校准的形式化探测能区分标准基准上无法区分的模型，并揭示结构可解释而非不透明的失败模式。
+
+---
+
+### 8. InfoFlow KV: Information-Flow-Aware KV Recomputation for Long Context
+**作者**: Xin Teng 等  
+**链接**: [arXiv:2603.05353](https://arxiv.org/abs/2603.05353)  
+**方向**: Efficient LLM / 长上下文推理
+
+**核心创新**:  
+针对 RAG 长上下文问答中的推理瓶颈，将选择性 KV 重计算建模为信息流问题。证明来自查询的简单注意力范数信号在推理一致的 RoPE 几何下，能可靠识别既语义相关又结构位置利于信息传播的 token。提出信息流引导的块重排序策略重建全局位置分配。
+
+**实验结果**:  
+在 LLM 和 VLM 基准上，相比现有方法在可比较的效率预算下实现一致的性能提升。
 
 ---
 
 ## 总结
 
-| 论文 | 主题 | 机构 | 核心贡献 | 评级 |
-|------|------|------|----------|------|
-| RAPO | Agentic RL | - | 检索增强策略优化，+5.0% 平均提升 | ⭐⭐⭐ |
-| Inherited Goal Drift | Goal Drift | - | 揭示 Agent 目标漂移的脆弱性 | ⭐⭐⭐ |
-| Beyond Task Completion | Agent Evaluation | - | 暴露 27-78% 的腐败成功 | ⭐⭐⭐ |
-| Speculative Speculative Decoding | 推理加速 | - | 双重推测解码，2倍加速 | ⭐⭐ |
-| DGRO | 对齐方法 | - | 基于密度的隐式偏好对齐 | ⭐⭐ |
+| 论文 | 主题 | 核心贡献 |
+|------|------|----------|
+| POET-X: Memory-efficient LLM Training by Scaling Orthogonal Transformation | 高效训练 | 内存高效的正交等价变换训练，单卡 H100 可训练十亿参数模型 |
+| On-Policy Self-Distillation for Reasoning Compression | 推理压缩 | 自蒸馏实现 57-59% token 削减，同时提升准确率 9-16 点 |
+| KARL: Knowledge Agents via Reinforcement Learning | Agentic RL | 多任务 RL 训练企业搜索 Agent，成本-质量 Pareto 最优 |
+| The Spike, the Sparse and the Sink | 注意力机制 | 揭示 Massive Activations 和 Attention Sinks 的架构根源和功能区分 |
+| STRUCTUREDAGENT: Planning with AND/OR Trees for Long-Horizon Web Tasks | 长程规划 | AND/OR 树层次化规划攻克长时程 Web 任务 |
+| WebChain: Large-Scale Human-Annotated Dataset of Real-World Web Interaction Traces | VLA 数据集 | 31K+ 真实网页交互轨迹，三重对齐多模态监督 |
+| X-RAY: Mapping LLM Reasoning Capability via Formalized and Calibrated Probes | 推理评估 | 形式化探测揭示 LLM 推理的不对称性和结构性失败模式 |
+| InfoFlow KV: Information-Flow-Aware KV Recomputation for Long Context | 长上下文推理 | 信息流感知的 KV 重计算，提升 RAG 效率 |
 
 **今日趋势观察**:
-
-1. **Agentic RL 进入深水区**：RAPO 的突破表明，LLM Agent 的探索能力可以通过引入外部检索信号显著增强。未来 Agentic RL 框架可能普遍采用"on-policy + off-policy 检索"的混合范式。
-
-2. **Agent 评估面临信任危机**：两篇论文（Inherited Goal Drift 和 Beyond Task Completion）共同揭示了当前 LLM Agent 在表面成功背后隐藏的脆弱性。目标漂移和腐败成功的普遍存在意味着我们需要更严格的评估框架，而非简单的任务完成率。
-
-3. **推测解码的递归优化**：SSD 将推测解码从单层优化推进到递归优化，这种"推测的推测"思路可能启发其他层次的递归加速设计。
+1. 推理效率优化成为热点：OPSDC 和 POET-X 分别从推理压缩和训练效率角度推动 LLM 的高效化，反映出社区对降低计算成本、提升部署可行性的迫切需求。
+2. Agentic RL 加速落地：KARL 和 STRUCTUREDAGENT 展现了 RL 在复杂 Agent 任务中的强大潜力，从企业搜索到网页规划，多任务 RL 训练正成为构建高性能 Agent 的关键范式。
 
 ---
 
