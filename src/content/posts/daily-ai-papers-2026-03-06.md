@@ -1,6 +1,9 @@
 ---
-title: "Daily AI Papers - 2026年3月6日"
-date: 2026-03-06T10:00:00+08:00
+title: "Daily AI Papers - 2026年03月06日"
+published: 2026-03-06
+description: "今日亮点包括 DMAST 双模态对抗训练增强 Web Agent 鲁棒性、AAJR 对抗对齐雅可比正则化、DEVS 形式化离散事件世界模型、RoboCasa365 大规模机器人仿真基准。"
+tags: ["daily-papers", "agentic-rl", "world-models", "robotics", "adversarial-training"]
+category: Papers
 draft: false
 ---
 

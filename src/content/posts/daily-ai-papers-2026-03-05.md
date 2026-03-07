@@ -1,8 +1,10 @@
 ---
 title: "Daily AI Papers - 2026年03月05日"
-date: 2026-03-05T08:00:00+08:00
-tags: ["AI Papers", "Efficient LLM", "Agentic RL", "Reasoning"]
-categories: ["Daily Papers"]
+published: 2026-03-05
+description: "今日亮点包括 POET-X 内存高效 LLM 训练框架、OPSDC 推理压缩实现 57-59% token 削减、KARL 多任务 RL 企业搜索 Agent、STRUCTUREDAGENT AND/OR 树长程规划。"
+tags: ["daily-papers", "efficient-llm", "agentic-rl", "reasoning", "world-models"]
+category: Papers
+draft: false
 ---
 
 # Daily AI Papers - 2026年3月5日

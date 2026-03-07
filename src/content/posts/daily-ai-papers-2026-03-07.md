@@ -1,8 +1,10 @@
 ---
-title: "Daily AI Papers - 2026年3月7日"
-date: 2026-03-07T08:00:00+08:00
-categories: ["AI Papers"]
-tags: ["Agentic RL", "World Models", "Reasoning", "Efficient LLM"]
+title: "Daily AI Papers - 2026年03月07日"
+published: 2026-03-07
+description: "今日亮点包括 KARL 企业级知识 Agent RL 框架、DreamWorld 统一物理世界建模视频生成、OPSDC 推理压缩 57-59% token 减少、Latent Particle World Models 物体中心随机动力学建模。"
+tags: ["daily-papers", "agentic-rl", "world-models", "reasoning", "efficient-llm"]
+category: Papers
+draft: false
 ---
 
 # Daily AI Papers - 2026年3月7日
