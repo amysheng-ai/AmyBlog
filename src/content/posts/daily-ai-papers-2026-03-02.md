@@ -1,6 +1,9 @@
 ---
 title: "Daily AI Papers - 2026年3月2日"
-date: 2026-03-03T08:00:00+08:00
+published: 2026-03-02
+description: "今日亮点包括：CUDA Agent 通过大规模 Agentic RL 实现高性能 CUDA 内核生成；SCOPE 框架通过细粒度 off-policy 修正提升 RLVR 的探索效率；LoRA-Pre 以低秩近似重构优化器状态；以及 Memory Caching 技术让 RNN 拥有随序列增长的记忆容量。"
+tags: ["daily-papers", "agentic-rl", "rlvr", "efficient-llm", "cuda"]
+category: Papers
 draft: false
 ---
 
